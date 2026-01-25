@@ -1,0 +1,261 @@
+---
+title: "Debugging Agents"
+description: "Troubleshooting tips and common issues"
+---
+
+# Debugging Agents
+
+When things go wrong, here's how to diagnose and fix them.
+
+## Local Testing
+
+Always test locally before deploying:
+
+```bash
+cd my-agent
+echo "What files are here?" | npm run dev
+```
+
+This runs your agent exactly as Castari does — prompt on stdin, response on stdout.
+
+### Debug Mode
+
+Add debug output to stderr (doesn't affect response):
+
+```typescript
+console.error('[DEBUG] Starting agent...');
+console.error(`[DEBUG] Prompt: ${prompt}`);
+console.error(`[DEBUG] Executing tool: ${toolName}`);
+```
+
+## Viewing Logs
+
+### Recent Invocations
+
+```bash
+cast logs my-agent
+```
+
+```
+INVOCATION           STATUS      TOKENS    COST      DURATION
+inv_abc123           completed   1,234     $0.02     2.3s
+inv_def456           completed   856       $0.01     1.8s
+inv_ghi789           failed      124       $0.00     0.5s
+```
+
+### Invocation Details
+
+```bash
+cast logs my-agent --invocation inv_ghi789
+```
+
+```
+Invocation: inv_ghi789
+Status:     failed
+
+Error:
+  Tool execution failed: read_file
+  ENOENT: no such file or directory, open '/nonexistent/file.txt'
+```
+
+### Stream Logs
+
+```bash
+cast logs my-agent --follow
+```
+
+Watch logs in real-time as invocations happen.
+
+## Common Errors
+
+### "Agent not found"
+
+**Cause:** Wrong slug or agent doesn't exist.
+
+**Fix:**
+```bash
+cast agents list  # See correct slugs
+cast invoke correct-slug "Hello"
+```
+
+### "Agent not active"
+
+**Cause:** Agent isn't deployed or was stopped.
+
+**Fix:**
+```bash
+cast agents get my-agent  # Check status
+cast deploy               # Redeploy
+```
+
+### "castari.json not found"
+
+**Cause:** Missing configuration file.
+
+**Fix:** Create `castari.json` in your agent root:
+```json
+{
+  "name": "my-agent",
+  "version": "0.1.0",
+  "entrypoint": "src/index.ts",
+  "runtime": "node"
+}
+```
+
+### "npm install failed"
+
+**Cause:** Dependency issues.
+
+**Fix:**
+1. Run `npm install` locally first
+2. Check `package.json` for errors
+3. Ensure all packages are published to npm
+
+### "Timeout exceeded"
+
+**Cause:** Agent took too long (>120s default).
+
+**Fix:**
+- Optimize slow operations
+- Increase timeout: `cast invoke my-agent "prompt" --timeout 300000`
+- Check for infinite loops
+
+### "Tool execution failed"
+
+**Cause:** Error in tool handler.
+
+**Fix:**
+```typescript
+// Add error handling
+case "my_tool":
+  try {
+    return await executeTool(input);
+  } catch (error) {
+    console.error(`[ERROR] Tool failed: ${error.message}`);
+    throw error;
+  }
+```
+
+### "ANTHROPIC_API_KEY not set"
+
+**Cause:** Missing API key.
+
+**Fix:** Castari injects this automatically. If you see this locally:
+```bash
+export ANTHROPIC_API_KEY=your-key
+echo "Hello" | npm run dev
+```
+
+## Debugging Tool Calls
+
+### Log Tool Inputs/Outputs
+
+```typescript
+async function executeTool(name: string, input: any): Promise<string> {
+  console.error(`[TOOL] ${name} called with:`, JSON.stringify(input));
+
+  const result = await doToolWork(name, input);
+
+  console.error(`[TOOL] ${name} returned:`, result.substring(0, 100));
+  return result;
+}
+```
+
+### Validate Tool Schemas
+
+Ensure your tool schemas match what Claude sends:
+
+```typescript
+// Schema says required: ["path"]
+// Make sure you handle missing path
+case "read_file":
+  if (!input.path) {
+    throw new Error("path is required");
+  }
+  return fs.readFileSync(input.path, "utf-8");
+```
+
+## Debugging Claude Interactions
+
+### Log Messages
+
+```typescript
+async function runAgent(prompt: string) {
+  const messages = [{ role: "user", content: prompt }];
+
+  while (true) {
+    console.error(`[CLAUDE] Sending ${messages.length} messages`);
+
+    const response = await client.messages.create({
+      model: "claude-sonnet-4-20250514",
+      messages,
+      tools
+    });
+
+    console.error(`[CLAUDE] Stop reason: ${response.stop_reason}`);
+    console.error(`[CLAUDE] Content blocks: ${response.content.length}`);
+
+    // ... rest of loop
+  }
+}
+```
+
+### Check Stop Reasons
+
+| Stop Reason | Meaning |
+|-------------|---------|
+| `end_turn` | Claude finished responding |
+| `tool_use` | Claude wants to use a tool |
+| `max_tokens` | Hit token limit |
+| `stop_sequence` | Hit a stop sequence |
+
+## Environment Issues
+
+### Check Secrets
+
+```bash
+cast secrets list my-agent
+```
+
+Make sure required secrets are set.
+
+### Check Agent Status
+
+```bash
+cast agents get my-agent
+```
+
+```
+Name:        My Agent
+Slug:        my-agent
+Status:      active
+Sandbox ID:  sbx_xyz789
+```
+
+If status is `error`, redeploy:
+
+```bash
+cast deploy
+```
+
+## Getting Help
+
+If you're stuck:
+
+1. **Check logs:** `cast logs my-agent --invocation <id>`
+2. **Test locally:** `echo "prompt" | npm run dev`
+3. **Check status:** `cast agents get my-agent`
+4. **Redeploy:** `cast deploy`
+
+Still stuck? Open an issue on [GitHub](https://github.com/castari/cli).
+
+## See Also
+
+<CardGroup cols={2}>
+  <Card title="cast logs" icon="terminal" href="/cli/logs">
+    CLI reference
+  </Card>
+  <Card title="Sandboxes" icon="box" href="/concepts/sandboxes">
+    Execution environment
+  </Card>
+</CardGroup>

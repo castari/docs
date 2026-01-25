@@ -1,0 +1,120 @@
+---
+title: "CastariClient"
+description: "SDK client configuration and setup"
+---
+
+# CastariClient
+
+The main client for interacting with the Castari API.
+
+## Constructor
+
+```typescript
+import { CastariClient } from '@castari/sdk';
+
+const client = new CastariClient(options);
+```
+
+## Options
+
+```typescript
+interface CastariClientOptions {
+  apiKey?: string;
+  token?: string;
+  baseUrl?: string;
+}
+```
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `apiKey` | `string` | API key for authentication (recommended) |
+| `token` | `string` | OAuth/JWT token for user-scoped access |
+| `baseUrl` | `string` | Override API base URL (default: `https://api.castari.com`) |
+
+<Note>
+Provide either `apiKey` or `token`, not both. If neither is provided, the client will throw an error on the first request.
+</Note>
+
+## Authentication Methods
+
+### API Key
+
+Best for server-side applications, CI/CD, and automation:
+
+```typescript
+const client = new CastariClient({
+  apiKey: process.env.CASTARI_API_KEY,
+});
+```
+
+API keys look like: `cast_xxxxxxxx_xxxxxxxxxx`
+
+Generate one in the [Castari Dashboard](https://app.castari.com).
+
+### OAuth Token
+
+Best for user-facing applications where you want user-scoped access:
+
+```typescript
+const client = new CastariClient({
+  token: userJwtToken,
+});
+```
+
+## Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `agents` | `AgentsAPI` | Agent management methods |
+| `secrets` | `SecretsAPI` | Secret management methods |
+
+## Example Usage
+
+```typescript
+import { CastariClient } from '@castari/sdk';
+
+// Create client
+const client = new CastariClient({
+  apiKey: process.env.CASTARI_API_KEY,
+});
+
+// Use agents API
+const agents = await client.agents.list();
+const agent = await client.agents.get('my-agent');
+await client.agents.deploy('my-agent');
+
+// Use secrets API
+const secrets = await client.secrets.list('my-agent');
+await client.secrets.set('my-agent', 'API_KEY', 'value');
+```
+
+## Custom Base URL
+
+For self-hosted or development environments:
+
+```typescript
+const client = new CastariClient({
+  apiKey: process.env.CASTARI_API_KEY,
+  baseUrl: 'https://api.my-castari-instance.com',
+});
+```
+
+## Environment Variables
+
+The SDK respects these environment variables:
+
+| Variable | Description |
+|----------|-------------|
+| `CASTARI_API_KEY` | Default API key if not provided in constructor |
+| `CASTARI_API_URL` | Default base URL if not provided |
+
+```typescript
+// Uses CASTARI_API_KEY from environment
+const client = new CastariClient({});
+```
+
+## See Also
+
+- [Agents API](/sdk/agents) — Manage agents
+- [Secrets API](/sdk/secrets) — Manage secrets
+- [Types](/sdk/types) — TypeScript interfaces

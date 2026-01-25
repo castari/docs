@@ -1,0 +1,153 @@
+---
+title: "Sandboxes"
+description: "Isolated execution environments for agents"
+---
+
+# Sandboxes
+
+Sandboxes are isolated environments where your agents run.
+
+## What is a Sandbox?
+
+A sandbox is a secure, isolated container that:
+
+- Runs your agent code
+- Has its own filesystem
+- Has network access (egress only)
+- Is completely isolated from other sandboxes
+
+Castari uses [E2B](https://e2b.dev) for sandbox infrastructure.
+
+## Per-Request Sandboxes
+
+Every invocation gets a **fresh sandbox**:
+
+```
+Request 1 → Sandbox A → Response 1 → Sandbox A destroyed
+Request 2 → Sandbox B → Response 2 → Sandbox B destroyed
+Request 3 → Sandbox C → Response 3 → Sandbox C destroyed
+```
+
+This provides:
+
+- **Security** — No data persists between requests
+- **Isolation** — One request can't affect another
+- **Scalability** — Parallel requests run in parallel sandboxes
+
+## Sandbox Lifecycle
+
+### During Deployment
+
+1. New sandbox created
+2. Agent code uploaded
+3. `npm install` executed
+4. Secrets injected as environment variables
+5. Sandbox kept warm for invocations
+
+### During Invocation
+
+1. Warm sandbox receives request
+2. Agent process started with prompt on stdin
+3. Agent executes (Claude + tools)
+4. Response captured from stdout
+5. Sandbox state reset for next request
+
+### On Redeploy
+
+1. Old sandbox destroyed
+2. New sandbox created with updated code
+3. All state from old sandbox is lost
+
+## Security Model
+
+### Isolation
+
+Each sandbox is a separate container with:
+
+- Own filesystem
+- Own process namespace
+- Own network namespace
+- No access to host system
+
+### Network
+
+| Direction | Allowed |
+|-----------|---------|
+| Outbound (egress) | Yes — can call external APIs |
+| Inbound (ingress) | No — cannot receive connections |
+
+### Filesystem
+
+- Agents can read/write within their sandbox
+- No access to other sandboxes
+- State does not persist between invocations
+
+## Resource Limits
+
+| Resource | Default Limit | Notes |
+|----------|--------------|-------|
+| Memory | 2 GB | Per sandbox |
+| CPU | 2 cores | Shared |
+| Timeout | 120 seconds | Per invocation |
+| Disk | 10 GB | Ephemeral |
+
+<Note>
+Need higher limits? Contact us for enterprise plans.
+</Note>
+
+## Preinstalled Software
+
+Sandboxes come with:
+
+- Node.js 20
+- npm
+- git
+- Common utilities (curl, wget, etc.)
+
+## Debugging Sandbox Issues
+
+### Timeout Errors
+
+If your agent times out:
+
+1. Check for infinite loops
+2. Optimize slow operations
+3. Increase timeout with `--timeout` flag
+
+### Out of Memory
+
+If your agent runs out of memory:
+
+1. Process data in chunks
+2. Avoid loading large files entirely into memory
+3. Clean up resources after use
+
+### Network Errors
+
+If external API calls fail:
+
+1. Check the API is accessible
+2. Verify credentials are set as secrets
+3. Check for rate limiting
+
+## E2B vs Other Sandboxing
+
+Why E2B?
+
+| Feature | E2B | Docker | Firecracker |
+|---------|-----|--------|-------------|
+| Startup time | ~1s | ~5s | ~125ms |
+| Isolation | Strong | Medium | Strong |
+| API | Simple | Complex | Complex |
+| Managed | Yes | No | No |
+
+## See Also
+
+<CardGroup cols={2}>
+  <Card title="How It Works" icon="gear" href="/concepts/how-it-works">
+    Architecture overview
+  </Card>
+  <Card title="Debugging" icon="bug" href="/guides/debugging">
+    Troubleshooting tips
+  </Card>
+</CardGroup>

@@ -1,0 +1,126 @@
+---
+title: "cast deploy"
+description: "Deploy an agent to Castari"
+---
+
+# cast deploy
+
+Deploy an agent to Castari from a local directory.
+
+## Usage
+
+```bash
+cast deploy [path] [options]
+```
+
+## Arguments
+
+| Argument | Description | Required |
+|----------|-------------|----------|
+| `path` | Path to agent directory | No (defaults to `.`) |
+
+## Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `-s, --slug <slug>` | Agent slug | Directory name |
+| `-n, --name <name>` | Agent display name | Slug |
+| `--no-install` | Skip npm install | `false` |
+
+## Examples
+
+### Deploy from current directory
+
+```bash
+cd my-agent
+cast deploy
+```
+
+### Deploy from a specific path
+
+```bash
+cast deploy ./path/to/agent
+```
+
+### Deploy with custom slug
+
+```bash
+cast deploy --slug my-custom-slug
+```
+
+### Skip npm install
+
+```bash
+cast deploy --no-install
+```
+
+## What Happens During Deploy
+
+<Steps>
+  <Step title="Upload">
+    Your agent code is uploaded to Castari.
+  </Step>
+  <Step title="Create Sandbox">
+    An isolated E2B sandbox is created for your agent.
+  </Step>
+  <Step title="Install Dependencies">
+    `npm install` runs inside the sandbox.
+  </Step>
+  <Step title="Inject Secrets">
+    Any secrets you've set become environment variables.
+  </Step>
+  <Step title="Ready">
+    Agent status becomes `active`. Ready to invoke.
+  </Step>
+</Steps>
+
+## Agent Structure Requirements
+
+Your agent directory must contain:
+
+```
+my-agent/
+├── castari.json      # Required: agent configuration
+├── package.json      # Required: dependencies
+├── src/
+│   └── index.ts      # Required: entry point
+├── CLAUDE.md         # Optional: agent instructions
+└── README.md         # Optional: documentation
+```
+
+### castari.json
+
+```json
+{
+  "name": "my-agent",
+  "version": "0.1.0",
+  "entrypoint": "src/index.ts",
+  "runtime": "node"
+}
+```
+
+## Redeploying
+
+Running `cast deploy` on an already-deployed agent will redeploy it:
+
+1. Previous sandbox is destroyed
+2. New sandbox is created
+3. Latest code is deployed
+
+<Warning>
+Redeploying does not preserve sandbox state. All files and data in the sandbox are lost.
+</Warning>
+
+## Errors
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `castari.json not found` | Missing config file | Add `castari.json` to your agent directory |
+| `npm install failed` | Dependency error | Check `package.json`, run `npm install` locally first |
+| `Authentication required` | Not logged in | Run `cast login` |
+
+## See Also
+
+- [cast init](/cli/init) — Create a new agent from a template
+- [cast invoke](/cli/invoke) — Invoke a deployed agent
+- [Your First Agent](/first-agent) — Understand agent structure

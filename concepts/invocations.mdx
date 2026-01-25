@@ -1,0 +1,216 @@
+---
+title: "Invocations"
+description: "How agent requests and responses work"
+---
+
+# Invocations
+
+An invocation is a single request-response cycle with an agent.
+
+## What is an Invocation?
+
+When you run:
+
+```bash
+cast invoke my-agent "What files are here?"
+```
+
+You create an **invocation** — a record of:
+
+- The prompt you sent
+- The response you received
+- Tokens used and cost
+- Execution time
+- Status (completed, failed, timeout)
+
+## Invocation Flow
+
+```
+┌──────────┐    prompt    ┌──────────────┐    stdin    ┌─────────┐
+│   You    │ ──────────▶  │  Castari API │ ─────────▶  │  Agent  │
+└──────────┘              └──────────────┘             └─────────┘
+     ▲                           │                          │
+     │         response          │         stdout           │
+     └───────────────────────────┴──────────────────────────┘
+```
+
+1. **Request** — You send a prompt via CLI, SDK, or API
+2. **Routing** — Castari routes to your agent's sandbox
+3. **Execution** — Agent processes prompt, uses tools, generates response
+4. **Response** — Output captured and returned to you
+5. **Tracking** — Tokens, cost, and duration recorded
+
+## Input and Output
+
+### Input
+
+Your prompt is passed to the agent via **stdin**:
+
+```typescript
+// Agent reads from stdin
+let prompt = "";
+process.stdin.on("data", (chunk) => (prompt += chunk));
+process.stdin.on("end", () => {
+  // Process prompt
+});
+```
+
+### Output
+
+Agent response is written to **stdout**:
+
+```typescript
+// Agent writes to stdout
+console.log(response);
+```
+
+<Note>
+Only stdout is captured as the response. stderr is logged but not returned.
+</Note>
+
+## Invocation Result
+
+Every invocation returns:
+
+```typescript
+{
+  invocation_id: "inv_abc123",
+  response: "The current directory contains...",
+  input_tokens: 124,
+  output_tokens: 1110,
+  total_cost_usd: 0.02,
+  duration_ms: 2341,
+  status: "completed"
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `invocation_id` | Unique identifier |
+| `response` | Agent's output |
+| `input_tokens` | Tokens in the prompt |
+| `output_tokens` | Tokens in the response |
+| `total_cost_usd` | Total cost in USD |
+| `duration_ms` | Execution time |
+| `status` | `completed`, `failed`, or `timeout` |
+
+## Statuses
+
+| Status | Description |
+|--------|-------------|
+| `completed` | Agent finished successfully |
+| `failed` | Agent encountered an error |
+| `timeout` | Execution exceeded time limit |
+
+## Timeouts
+
+Default timeout is **120 seconds** (2 minutes).
+
+Override with:
+
+```bash
+# CLI
+cast invoke my-agent "Complex task" --timeout 300000
+
+# SDK
+await client.agents.invoke('my-agent', 'Complex task', { timeout: 300000 });
+```
+
+Maximum timeout: 600 seconds (10 minutes).
+
+## Streaming
+
+For real-time output:
+
+```bash
+cast invoke my-agent "Write a long response" --stream
+```
+
+Response streams token by token as generated.
+
+## Viewing Invocation History
+
+```bash
+cast logs my-agent
+```
+
+```
+INVOCATION           STATUS      TOKENS    COST      DURATION
+inv_abc123           completed   1,234     $0.02     2.3s
+inv_def456           completed   856       $0.01     1.8s
+inv_ghi789           failed      124       $0.00     0.5s
+```
+
+### Invocation Details
+
+```bash
+cast logs my-agent --invocation inv_abc123
+```
+
+Shows full input, output, and error details.
+
+## Cost Tracking
+
+Costs are calculated based on:
+
+- **Input tokens** — Prompt + system instructions
+- **Output tokens** — Agent's response
+- **Model** — Claude pricing tiers
+
+View your usage:
+
+```bash
+cast usage
+```
+
+## Concurrency
+
+Multiple invocations can run **in parallel**:
+
+```typescript
+// These run concurrently in separate sandboxes
+const results = await Promise.all([
+  client.agents.invoke('my-agent', 'Task 1'),
+  client.agents.invoke('my-agent', 'Task 2'),
+  client.agents.invoke('my-agent', 'Task 3'),
+]);
+```
+
+Each gets its own isolated sandbox.
+
+## Error Handling
+
+### In CLI
+
+```bash
+cast invoke my-agent "Bad request"
+# Error: Agent execution failed
+# Run 'cast logs my-agent --invocation inv_xyz' for details
+```
+
+### In SDK
+
+```typescript
+try {
+  const result = await client.agents.invoke('my-agent', prompt);
+} catch (error) {
+  if (error instanceof CastariError) {
+    console.log(error.status);  // 500
+    console.log(error.message); // "Agent execution failed"
+  }
+}
+```
+
+## See Also
+
+<CardGroup cols={2}>
+  <Card title="cast invoke" icon="terminal" href="/cli/invoke">
+    CLI reference
+  </Card>
+  <Card title="Agents API" icon="code" href="/sdk/agents#invokeslug-prompt">
+    SDK reference
+  </Card>
+  <Card title="Debugging" icon="bug" href="/guides/debugging">
+    Troubleshooting tips
+  </Card>
+</CardGroup>

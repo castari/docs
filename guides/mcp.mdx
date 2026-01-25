@@ -1,0 +1,270 @@
+---
+title: "MCP Integration"
+description: "Using Model Context Protocol tools with agents"
+---
+
+# MCP Integration
+
+The Model Context Protocol (MCP) provides a standardized way to give Claude access to external tools and data sources.
+
+## What is MCP?
+
+MCP is an open protocol that lets you connect Claude to:
+
+- **Databases** — Query and update data
+- **APIs** — Call external services
+- **File systems** — Read and write files
+- **Custom tools** — Any functionality you define
+
+## MCP vs Built-in Tools
+
+| Approach | Use When |
+|----------|----------|
+| Built-in tools | Simple, self-contained tools |
+| MCP servers | Complex integrations, reusable across agents |
+
+## Using MCP in Castari Agents
+
+### 1. Install MCP SDK
+
+```bash
+npm install @modelcontextprotocol/sdk
+```
+
+### 2. Define MCP Tools
+
+```typescript
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+
+const server = new Server(
+  { name: "my-tools", version: "1.0.0" },
+  { capabilities: { tools: {} } }
+);
+
+// Define a tool
+server.setRequestHandler("tools/list", async () => ({
+  tools: [
+    {
+      name: "query_database",
+      description: "Query the database",
+      inputSchema: {
+        type: "object",
+        properties: {
+          query: { type: "string", description: "SQL query" }
+        },
+        required: ["query"]
+      }
+    }
+  ]
+}));
+
+// Handle tool calls
+server.setRequestHandler("tools/call", async (request) => {
+  const { name, arguments: args } = request.params;
+
+  if (name === "query_database") {
+    const results = await executeQuery(args.query);
+    return { content: [{ type: "text", text: JSON.stringify(results) }] };
+  }
+});
+```
+
+### 3. Connect to Claude
+
+```typescript
+import Anthropic from "@anthropic-ai/sdk";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+
+const client = new Anthropic();
+const mcpClient = new Client({ name: "agent", version: "1.0.0" });
+
+// Get tools from MCP server
+const tools = await mcpClient.listTools();
+
+// Use with Claude
+const response = await client.messages.create({
+  model: "claude-sonnet-4-20250514",
+  tools: tools.tools.map(t => ({
+    name: t.name,
+    description: t.description,
+    input_schema: t.inputSchema
+  })),
+  messages: [{ role: "user", content: prompt }]
+});
+
+// Execute tool calls via MCP
+for (const block of response.content) {
+  if (block.type === "tool_use") {
+    const result = await mcpClient.callTool({
+      name: block.name,
+      arguments: block.input
+    });
+  }
+}
+```
+
+## Example: Database Agent
+
+A complete example integrating with PostgreSQL:
+
+```typescript
+// src/tools/database.ts
+import { Pool } from 'pg';
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL
+});
+
+export const databaseTools: Anthropic.Tool[] = [
+  {
+    name: "query_database",
+    description: "Execute a read-only SQL query",
+    input_schema: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description: "SQL SELECT query"
+        }
+      },
+      required: ["query"]
+    }
+  },
+  {
+    name: "list_tables",
+    description: "List all tables in the database",
+    input_schema: {
+      type: "object",
+      properties: {}
+    }
+  }
+];
+
+export async function executeDatabaseTool(
+  name: string,
+  input: any
+): Promise<string> {
+  switch (name) {
+    case "query_database":
+      // Safety: only allow SELECT queries
+      if (!input.query.trim().toLowerCase().startsWith("select")) {
+        throw new Error("Only SELECT queries are allowed");
+      }
+      const result = await pool.query(input.query);
+      return JSON.stringify(result.rows, null, 2);
+
+    case "list_tables":
+      const tables = await pool.query(`
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+      `);
+      return tables.rows.map(r => r.table_name).join("\n");
+
+    default:
+      throw new Error(`Unknown tool: ${name}`);
+  }
+}
+```
+
+Set the secret:
+
+```bash
+cast secrets set my-agent DATABASE_URL postgres://user:pass@host/db
+```
+
+## Example: API Integration
+
+Integrating with an external REST API:
+
+```typescript
+// src/tools/api.ts
+import axios from 'axios';
+
+export const apiTools: Anthropic.Tool[] = [
+  {
+    name: "get_user",
+    description: "Get user details by ID",
+    input_schema: {
+      type: "object",
+      properties: {
+        user_id: { type: "string" }
+      },
+      required: ["user_id"]
+    }
+  },
+  {
+    name: "create_ticket",
+    description: "Create a support ticket",
+    input_schema: {
+      type: "object",
+      properties: {
+        subject: { type: "string" },
+        description: { type: "string" },
+        priority: { type: "string", enum: ["low", "medium", "high"] }
+      },
+      required: ["subject", "description"]
+    }
+  }
+];
+
+const api = axios.create({
+  baseURL: 'https://api.example.com',
+  headers: { 'Authorization': `Bearer ${process.env.API_TOKEN}` }
+});
+
+export async function executeApiTool(name: string, input: any): Promise<string> {
+  switch (name) {
+    case "get_user":
+      const user = await api.get(`/users/${input.user_id}`);
+      return JSON.stringify(user.data);
+
+    case "create_ticket":
+      const ticket = await api.post('/tickets', input);
+      return `Created ticket #${ticket.data.id}`;
+
+    default:
+      throw new Error(`Unknown tool: ${name}`);
+  }
+}
+```
+
+## Best Practices
+
+### Security
+
+1. **Validate inputs** — Never pass raw user input to databases or APIs
+2. **Limit scope** — Only expose necessary operations
+3. **Use secrets** — Never hardcode credentials
+
+### Performance
+
+1. **Connection pooling** — Reuse database connections
+2. **Timeouts** — Set reasonable timeouts for external calls
+3. **Caching** — Cache frequently accessed data
+
+### Error Handling
+
+```typescript
+try {
+  const result = await executeApiTool(name, input);
+  return result;
+} catch (error) {
+  if (axios.isAxiosError(error)) {
+    return `API Error: ${error.response?.status} - ${error.response?.data?.message}`;
+  }
+  throw error;
+}
+```
+
+## See Also
+
+<CardGroup cols={2}>
+  <Card title="Custom Agents" icon="pen" href="/guides/custom-agents">
+    Building agents from scratch
+  </Card>
+  <Card title="Secrets" icon="key" href="/concepts/secrets">
+    Managing credentials
+  </Card>
+</CardGroup>

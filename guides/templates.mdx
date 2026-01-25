@@ -1,0 +1,227 @@
+---
+title: "Using Templates"
+description: "Start with pre-built agent templates"
+---
+
+# Using Templates
+
+Templates give you a working agent in seconds. Start from a proven foundation, then customize.
+
+## Available Templates
+
+| Template | Description | Best For |
+|----------|-------------|----------|
+| `default` | Coding agent with file/bash tools | General purpose, coding tasks |
+| `research-agent` | Web search and document synthesis | Research, reports, analysis |
+| `support-agent` | Ticket handling and escalation | Customer support workflows |
+| `mcp-tools` | Custom tool integration example | Learning MCP patterns |
+
+## Using cast init
+
+```bash
+cast init my-agent
+```
+
+Interactive prompt:
+
+```
+? Select a template:
+❯ default — Coding agent with file and bash tools (like Claude Code)
+  research-agent — Deep research with web search and document synthesis
+  support-agent — Customer support with ticket handling and escalation
+  mcp-tools — Agent with example MCP server integration
+```
+
+### Skip the prompt
+
+```bash
+cast init my-agent --template research-agent
+```
+
+## Template Structure
+
+Every template includes:
+
+```
+my-agent/
+├── castari.json      # Agent configuration
+├── package.json      # Dependencies
+├── tsconfig.json     # TypeScript config
+├── src/
+│   └── index.ts      # Agent entry point with tools
+├── CLAUDE.md         # Agent instructions
+└── README.md         # Documentation
+```
+
+---
+
+## Template: default
+
+A Claude Code-style agent with file and bash tools.
+
+**Tools included:**
+
+| Tool | Description |
+|------|-------------|
+| `read_file` | Read file contents |
+| `write_file` | Create/update files |
+| `bash` | Execute shell commands |
+| `list_files` | List directory contents |
+
+**Example invocations:**
+
+```bash
+cast invoke my-agent "What files are here?"
+cast invoke my-agent "Create a hello.py that prints Hello World"
+cast invoke my-agent "Run the tests"
+```
+
+**Best for:** General-purpose coding assistance, file manipulation, automation.
+
+---
+
+## Template: research-agent
+
+Deep research with web search and document synthesis.
+
+**Tools included:**
+
+| Tool | Description |
+|------|-------------|
+| `web_search` | Search the web |
+| `read_url` | Fetch and read web pages |
+| `save_report` | Save findings to file |
+| `read_file` | Read local documents |
+
+**Example invocations:**
+
+```bash
+cast invoke my-agent "Research the current state of AI agents in 2026"
+cast invoke my-agent "Compare AWS, GCP, and Azure for serverless"
+```
+
+<Note>
+The research-agent template includes a mock web search. For production, integrate with SerpAPI, Tavily, or similar.
+</Note>
+
+**Best for:** Research tasks, report generation, competitive analysis.
+
+---
+
+## Template: support-agent
+
+Customer support with ticket handling.
+
+**Tools included:**
+
+| Tool | Description |
+|------|-------------|
+| `lookup_user` | Find user by email/ID |
+| `lookup_order` | Find order details |
+| `create_ticket` | Escalate to human |
+| `send_response` | Reply to customer |
+
+**Example invocations:**
+
+```bash
+cast invoke my-agent "I need help with order #12345"
+cast invoke my-agent "How do I reset my password?"
+```
+
+**Best for:** Customer support automation, help desk, FAQ handling.
+
+---
+
+## Template: mcp-tools
+
+Example of custom MCP tool integration.
+
+**Tools included:**
+
+| Tool | Description |
+|------|-------------|
+| `calculate` | Math calculations |
+| `get_weather` | Weather lookup (mock) |
+| `query_database` | Database queries (mock) |
+| `send_notification` | Send alerts |
+
+**Use this to learn:**
+
+- How to define tool schemas
+- How to implement tool handlers
+- How to integrate external services
+
+**Best for:** Learning tool development, prototyping custom integrations.
+
+---
+
+## Customizing Templates
+
+### 1. Edit CLAUDE.md
+
+The `CLAUDE.md` file contains agent instructions:
+
+```markdown
+# My Agent
+
+You are a helpful assistant that...
+
+## Guidelines
+- Be concise
+- Always explain before acting
+- Ask for clarification when unsure
+```
+
+### 2. Modify Tools
+
+Edit `src/index.ts` to add, remove, or modify tools:
+
+```typescript
+const tools: Anthropic.Tool[] = [
+  {
+    name: "my_custom_tool",
+    description: "Does something useful",
+    input_schema: {
+      type: "object",
+      properties: {
+        input: { type: "string" }
+      },
+      required: ["input"]
+    }
+  }
+];
+```
+
+### 3. Add Dependencies
+
+```bash
+npm install axios  # Example: add HTTP client
+```
+
+Then use in your agent:
+
+```typescript
+import axios from 'axios';
+
+// In your tool handler
+const response = await axios.get('https://api.example.com/data');
+```
+
+### 4. Redeploy
+
+After changes:
+
+```bash
+cast deploy
+```
+
+## See Also
+
+<CardGroup cols={2}>
+  <Card title="Custom Agents" icon="pen" href="/guides/custom-agents">
+    Build from scratch
+  </Card>
+  <Card title="MCP Integration" icon="plug" href="/guides/mcp">
+    Advanced tool patterns
+  </Card>
+</CardGroup>

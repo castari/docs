@@ -1,0 +1,326 @@
+---
+title: "Best Practices"
+description: "Guidelines for building production-ready agents"
+---
+
+# Best Practices
+
+Guidelines for building reliable, secure, and efficient agents.
+
+## Agent Design
+
+### Keep Tools Focused
+
+Each tool should do one thing well:
+
+```typescript
+// Good: Specific, focused tools
+{ name: "read_file", description: "Read file contents" }
+{ name: "write_file", description: "Write content to file" }
+{ name: "list_files", description: "List files in directory" }
+
+// Bad: One tool that does everything
+{ name: "file_operations", description: "Read, write, delete, list files" }
+```
+
+### Write Clear Tool Descriptions
+
+Claude uses descriptions to decide when to use tools:
+
+```typescript
+// Good: Clear, specific description
+{
+  name: "search_users",
+  description: "Search for users by email address. Returns matching user profiles with id, name, and email."
+}
+
+// Bad: Vague description
+{
+  name: "search_users",
+  description: "Search users"
+}
+```
+
+### Use CLAUDE.md Effectively
+
+Structure your CLAUDE.md for clarity:
+
+```markdown
+# Agent Name
+
+One-line description of what this agent does.
+
+## Capabilities
+- What the agent CAN do
+- Available tools and their purposes
+
+## Limitations
+- What the agent should NOT do
+- Boundaries and restrictions
+
+## Guidelines
+- How to approach tasks
+- Tone and communication style
+- When to ask for clarification
+
+## Examples
+- Example inputs and expected behavior
+```
+
+## Error Handling
+
+### Handle Tool Failures Gracefully
+
+```typescript
+try {
+  const result = await executeTool(toolUse.name, toolUse.input);
+  toolResults.push({
+    type: "tool_result",
+    tool_use_id: toolUse.id,
+    content: result
+  });
+} catch (error) {
+  // Return error as tool result so Claude can adapt
+  toolResults.push({
+    type: "tool_result",
+    tool_use_id: toolUse.id,
+    content: `Error: ${error.message}`,
+    is_error: true
+  });
+}
+```
+
+### Validate Inputs
+
+```typescript
+case "read_file":
+  // Validate path exists
+  if (!input.path) {
+    throw new Error("path is required");
+  }
+
+  // Validate path is safe
+  if (input.path.includes("..")) {
+    throw new Error("path traversal not allowed");
+  }
+
+  // Check file exists
+  if (!fs.existsSync(input.path)) {
+    throw new Error(`file not found: ${input.path}`);
+  }
+
+  return fs.readFileSync(input.path, "utf-8");
+```
+
+### Set Timeouts
+
+```typescript
+const timeout = (ms: number) => new Promise((_, reject) =>
+  setTimeout(() => reject(new Error(`Timeout after ${ms}ms`)), ms)
+);
+
+// Wrap long operations
+const result = await Promise.race([
+  executeSlowOperation(),
+  timeout(30000)
+]);
+```
+
+## Security
+
+### Never Trust User Input
+
+```typescript
+// Bad: SQL injection risk
+case "query_database":
+  return db.query(input.query);
+
+// Good: Parameterized queries only
+case "query_database":
+  return db.query(input.query, input.params);
+```
+
+### Restrict File Access
+
+```typescript
+const ALLOWED_PATHS = ['/workspace', '/tmp'];
+
+function isPathAllowed(filePath: string): boolean {
+  const resolved = path.resolve(filePath);
+  return ALLOWED_PATHS.some(allowed =>
+    resolved.startsWith(allowed)
+  );
+}
+
+case "read_file":
+  if (!isPathAllowed(input.path)) {
+    throw new Error("Access denied");
+  }
+  return fs.readFileSync(input.path, "utf-8");
+```
+
+### Sanitize Command Execution
+
+```typescript
+// Bad: Command injection risk
+case "bash":
+  return execSync(input.command);
+
+// Better: Whitelist safe commands
+const ALLOWED_COMMANDS = ['ls', 'cat', 'grep', 'find'];
+
+case "bash":
+  const cmd = input.command.split(' ')[0];
+  if (!ALLOWED_COMMANDS.includes(cmd)) {
+    throw new Error(`Command not allowed: ${cmd}`);
+  }
+  return execSync(input.command);
+```
+
+### Use Secrets for Credentials
+
+```typescript
+// Bad: Hardcoded credentials
+const apiKey = "sk-abc123";
+
+// Good: Use environment variables
+const apiKey = process.env.API_KEY;
+if (!apiKey) {
+  throw new Error("API_KEY not configured");
+}
+```
+
+## Performance
+
+### Minimize API Calls
+
+```typescript
+// Bad: Multiple calls for same data
+const user = await getUser(id);
+const orders = await getOrders(id);
+const preferences = await getPreferences(id);
+
+// Better: Batch or cache
+const userData = await getUserWithDetails(id);
+// or use caching
+```
+
+### Stream Large Outputs
+
+For long responses, consider streaming:
+
+```typescript
+// Instead of buffering everything
+let output = "";
+for (const chunk of results) {
+  output += chunk;
+}
+console.log(output);
+
+// Stream incrementally
+for (const chunk of results) {
+  process.stdout.write(chunk);
+}
+```
+
+### Clean Up Resources
+
+```typescript
+// Close connections when done
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+process.on('exit', () => {
+  pool.end();
+});
+```
+
+## Testing
+
+### Test Locally First
+
+```bash
+# Test with various inputs
+echo "Simple prompt" | npm run dev
+echo "What files are here?" | npm run dev
+echo "Create a file called test.txt" | npm run dev
+```
+
+### Test Edge Cases
+
+- Empty prompts
+- Very long prompts
+- Prompts that might cause infinite loops
+- Prompts with special characters
+
+### Test Tool Failures
+
+```bash
+echo "Read /nonexistent/file.txt" | npm run dev
+# Should handle gracefully, not crash
+```
+
+## Monitoring
+
+### Log Important Events
+
+```typescript
+console.error(`[${new Date().toISOString()}] Agent started`);
+console.error(`[${new Date().toISOString()}] Tool: ${name}`);
+console.error(`[${new Date().toISOString()}] Tokens: ${inputTokens}/${outputTokens}`);
+```
+
+### Track Costs
+
+Monitor your usage:
+
+```bash
+cast usage
+cast usage --daily
+```
+
+## Deployment
+
+### Use Git for Versioning
+
+Keep your agent in version control:
+
+```bash
+git init
+git add .
+git commit -m "Initial agent"
+```
+
+### Document Your Agent
+
+Include a README.md:
+
+```markdown
+# My Agent
+
+Description of what this agent does.
+
+## Setup
+
+1. `npm install`
+2. Configure secrets: `cast secrets set my-agent API_KEY xxx`
+3. Deploy: `cast deploy`
+
+## Usage
+
+cast invoke my-agent "Your prompt here"
+
+## Development
+
+npm run dev
+```
+
+## See Also
+
+<CardGroup cols={2}>
+  <Card title="Debugging" icon="bug" href="/guides/debugging">
+    Troubleshooting tips
+  </Card>
+  <Card title="Secrets" icon="key" href="/concepts/secrets">
+    Managing credentials
+  </Card>
+</CardGroup>

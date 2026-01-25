@@ -1,0 +1,112 @@
+---
+title: "SDK Overview"
+description: "Use Castari programmatically with TypeScript"
+---
+
+# SDK Overview
+
+The `@castari/sdk` package lets you manage agents programmatically.
+
+## Installation
+
+```bash
+npm install @castari/sdk
+```
+
+## Quick Example
+
+```typescript
+import { CastariClient } from '@castari/sdk';
+
+const client = new CastariClient({
+  apiKey: process.env.CASTARI_API_KEY,
+});
+
+// List agents
+const agents = await client.agents.list();
+console.log(agents);
+
+// Deploy an agent
+await client.agents.deploy('my-agent');
+
+// Invoke an agent
+const result = await client.agents.invoke('my-agent', 'Hello!');
+console.log(result.response);
+```
+
+## When to Use the SDK
+
+| Use Case | CLI or SDK? |
+|----------|-------------|
+| Manual deploys | CLI |
+| CI/CD pipelines | SDK |
+| Building apps that manage agents | SDK |
+| Quick testing | CLI |
+| Programmatic invocations | SDK |
+
+## Authentication
+
+The SDK supports two authentication methods:
+
+### API Key (Recommended for servers)
+
+```typescript
+const client = new CastariClient({
+  apiKey: 'cast_xxxxxxxx_xxxxxxxxxx',
+});
+```
+
+Generate an API key in the [Castari Dashboard](https://app.castari.com).
+
+### OAuth Token (For user-scoped access)
+
+```typescript
+const client = new CastariClient({
+  token: 'eyJhbGciOiJSUzI1NiIs...', // Clerk JWT
+});
+```
+
+## TypeScript Support
+
+The SDK is written in TypeScript and exports all types:
+
+```typescript
+import {
+  CastariClient,
+  Agent,
+  AgentStatus,
+  InvocationResult,
+} from '@castari/sdk';
+```
+
+## Error Handling
+
+```typescript
+import { CastariClient, CastariError } from '@castari/sdk';
+
+try {
+  await client.agents.deploy('my-agent');
+} catch (error) {
+  if (error instanceof CastariError) {
+    console.error(`API Error: ${error.message}`);
+    console.error(`Status: ${error.status}`);
+  }
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="CastariClient" icon="plug" href="/sdk/client">
+    Client configuration and setup
+  </Card>
+  <Card title="Agents API" icon="robot" href="/sdk/agents">
+    List, deploy, and invoke agents
+  </Card>
+  <Card title="Secrets API" icon="key" href="/sdk/secrets">
+    Manage agent secrets
+  </Card>
+  <Card title="Types" icon="code" href="/sdk/types">
+    TypeScript interfaces
+  </Card>
+</CardGroup>

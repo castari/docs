@@ -1,80 +1,119 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: "Quick Start"
+description: "Deploy your first agent in under 5 minutes"
 ---
 
-## Get started in three steps
+# Quick Start
 
-Get your documentation site running locally and make your first customization.
+Deploy your first Claude agent in under 5 minutes.
 
-### Step 1: Set up your local environment
+<Info>
+**Prerequisites:** Node.js 18+ and npm installed.
+</Info>
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+<Steps>
 
-### Step 2: Deploy your changes
+<Step title="Install the CLI">
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+```bash
+npm install -g @castari/cli
+```
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+Verify installation:
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+```bash
+cast --version
+```
 
-### Step 3: Go live
+</Step>
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+<Step title="Login to Castari">
 
-## Next steps
+```bash
+cast login
+```
 
-Now that you have your docs running, explore these key features:
+This opens your browser to authenticate. Once complete, you'll see:
+
+```
+✓ Logged in as you@example.com
+```
+
+</Step>
+
+<Step title="Create your first agent">
+
+```bash
+cast init my-agent
+```
+
+Select the `default` template when prompted. This creates a coding agent with file and bash tools.
+
+```
+? Select a template:
+❯ default — Coding agent with file and bash tools (like Claude Code)
+  research-agent — Deep research with web search and document synthesis
+  support-agent — Customer support with ticket handling and escalation
+  mcp-tools — Agent with example MCP server integration
+
+✓ Created my-agent/ from default template
+✓ Installed dependencies
+```
+
+</Step>
+
+<Step title="Deploy your agent">
+
+```bash
+cd my-agent
+cast deploy
+```
+
+Wait for deployment to complete:
+
+```
+⠋ Deploying my-agent...
+✓ Agent 'my-agent' deployed!
+```
+
+</Step>
+
+<Step title="Invoke your agent">
+
+```bash
+cast invoke my-agent "What files are in the current directory?"
+```
+
+Your agent responds:
+
+```
+The current directory contains:
+- src/index.ts
+- package.json
+- castari.json
+- CLAUDE.md
+- README.md
+```
+
+</Step>
+
+</Steps>
+
+## You did it!
+
+Your agent is deployed and running. Here's what you can do next:
 
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Customize Your Agent" icon="pen" href="/guides/custom-agents">
+    Edit the code and CLAUDE.md to change behavior
+  </Card>
+  <Card title="Add Secrets" icon="key" href="/cli/secrets">
+    Add API keys and environment variables
+  </Card>
+  <Card title="Try Other Templates" icon="grid" href="/guides/templates">
+    Research agents, support agents, and more
+  </Card>
+  <Card title="Use the SDK" icon="code" href="/sdk/overview">
+    Invoke agents programmatically
+  </Card>
 </CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>
