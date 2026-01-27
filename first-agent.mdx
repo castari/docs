@@ -1,0 +1,216 @@
+---
+title: "Your First Agent"
+description: "Understand agent structure and customize your first deployment"
+---
+
+# Your First Agent
+
+After running `cast init`, you have a working agent. Let's understand its structure and how to customize it.
+
+## Agent Structure
+
+Every Castari agent has this structure:
+
+```
+my-agent/
+├── castari.json      # Agent configuration
+├── package.json      # Dependencies
+├── tsconfig.json     # TypeScript config
+├── src/
+│   └── index.ts      # Agent entry point
+├── CLAUDE.md         # Agent instructions
+└── README.md         # Documentation
+```
+
+## castari.json
+
+The agent configuration file:
+
+```json
+{
+  "name": "my-agent",
+  "version": "0.1.0",
+  "entrypoint": "src/index.ts",
+  "runtime": "node"
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `name` | Display name for your agent |
+| `version` | Semantic version |
+| `entrypoint` | Path to main file |
+| `runtime` | Runtime environment (`node`) |
+
+## CLAUDE.md
+
+This file contains instructions for Claude. It's like a system prompt that shapes your agent's behavior:
+
+```markdown
+# My Agent
+
+You are a helpful coding assistant.
+
+## Guidelines
+
+- Be concise and direct
+- Always explain before making changes
+- Ask for clarification when requirements are unclear
+
+## Tools Available
+
+- `read_file` - Read file contents
+- `write_file` - Create or update files
+- `bash` - Run shell commands
+```
+
+<Tip>
+The better your CLAUDE.md, the better your agent performs. Be specific about capabilities, constraints, and expected behavior.
+</Tip>
+
+## src/index.ts
+
+The entry point defines your agent's tools and handles invocations:
+
+```typescript
+import Anthropic from "@anthropic-ai/sdk";
+
+const client = new Anthropic();
+
+// Define tools
+const tools: Anthropic.Tool[] = [
+  {
+    name: "read_file",
+    description: "Read the contents of a file",
+    input_schema: {
+      type: "object",
+      properties: {
+        path: { type: "string", description: "File path to read" }
+      },
+      required: ["path"]
+    }
+  },
+  // ... more tools
+];
+
+// Handle tool calls
+async function handleTool(name: string, input: any): Promise<string> {
+  switch (name) {
+    case "read_file":
+      return fs.readFileSync(input.path, "utf-8");
+    // ... handle other tools
+  }
+}
+
+// Main agent loop
+async function run(prompt: string) {
+  // Agent implementation
+}
+
+// Read prompt from stdin, run agent, output to stdout
+let prompt = "";
+process.stdin.on("data", (chunk) => (prompt += chunk));
+process.stdin.on("end", async () => {
+  const response = await run(prompt);
+  console.log(response);
+});
+```
+
+## Local Testing
+
+Test your agent locally before deploying:
+
+```bash
+cd my-agent
+echo "What files are here?" | npm run dev
+```
+
+This runs your agent with the prompt as input, just like `cast invoke` does remotely.
+
+## Customizing Your Agent
+
+### Add a New Tool
+
+1. Define the tool schema in `tools` array
+2. Add the handler in `handleTool` function
+
+```typescript
+// 1. Define the tool
+{
+  name: "search_web",
+  description: "Search the web for information",
+  input_schema: {
+    type: "object",
+    properties: {
+      query: { type: "string", description: "Search query" }
+    },
+    required: ["query"]
+  }
+}
+
+// 2. Handle the tool
+case "search_web":
+  return await searchWeb(input.query);
+```
+
+### Change Agent Behavior
+
+Edit `CLAUDE.md` to change how your agent thinks and acts:
+
+```markdown
+# Research Agent
+
+You are a research assistant that finds and synthesizes information.
+
+## Guidelines
+
+- Always cite sources
+- Present multiple perspectives
+- Summarize findings at the end
+```
+
+### Add Dependencies
+
+```bash
+npm install axios  # Example: HTTP client
+```
+
+Then import and use in your agent:
+
+```typescript
+import axios from 'axios';
+
+// In your tool handler
+const response = await axios.get('https://api.example.com/data');
+```
+
+## Redeploying
+
+After making changes, redeploy:
+
+```bash
+cast deploy
+```
+
+This uploads your changes and creates a fresh sandbox.
+
+<Note>
+Redeploying destroys the previous sandbox. Any files or state in the sandbox are lost.
+</Note>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="CLI Reference" icon="terminal" href="/cli/overview">
+    Learn all available commands
+  </Card>
+  <Card title="Templates" icon="grid" href="/guides/templates">
+    Try different agent templates
+  </Card>
+  <Card title="Add Secrets" icon="key" href="/cli/secrets">
+    Add API keys for external services
+  </Card>
+  <Card title="How It Works" icon="gear" href="/concepts/how-it-works">
+    Understand the architecture
+  </Card>
+</CardGroup>

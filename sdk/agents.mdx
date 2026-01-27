@@ -1,0 +1,264 @@
+---
+title: "Agents API"
+description: "Manage agents programmatically"
+---
+
+# Agents API
+
+The Agents API lets you list, create, deploy, and invoke agents.
+
+Access via `client.agents`:
+
+```typescript
+const client = new CastariClient({ apiKey: '...' });
+const agents = client.agents;
+```
+
+## Methods
+
+### list()
+
+List all agents for the authenticated user.
+
+```typescript
+const agents = await client.agents.list();
+```
+
+**Returns:** `Promise<Agent[]>`
+
+**Example:**
+
+```typescript
+const agents = await client.agents.list();
+
+for (const agent of agents) {
+  console.log(`${agent.name} (${agent.slug}) - ${agent.status}`);
+}
+```
+
+---
+
+### get(slug)
+
+Get a specific agent by slug.
+
+```typescript
+const agent = await client.agents.get(slug);
+```
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `slug` | `string` | The agent's unique slug |
+
+**Returns:** `Promise<Agent>`
+
+**Example:**
+
+```typescript
+const agent = await client.agents.get('my-agent');
+console.log(agent.status); // 'active'
+```
+
+**Errors:**
+
+- `404` — Agent not found
+
+---
+
+### create(data)
+
+Create a new agent.
+
+```typescript
+const agent = await client.agents.create(data);
+```
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `data.slug` | `string` | Unique identifier for the agent |
+| `data.name` | `string` | Display name (optional, defaults to slug) |
+| `data.gitRepoUrl` | `string` | Git repository URL (optional) |
+
+**Returns:** `Promise<Agent>`
+
+**Example:**
+
+```typescript
+const agent = await client.agents.create({
+  slug: 'my-agent',
+  name: 'My Agent',
+});
+```
+
+---
+
+### delete(slug)
+
+Delete an agent.
+
+```typescript
+await client.agents.delete(slug);
+```
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `slug` | `string` | The agent's slug |
+
+**Returns:** `Promise<void>`
+
+**Example:**
+
+```typescript
+await client.agents.delete('my-agent');
+```
+
+<Warning>
+This permanently deletes the agent, its secrets, and all invocation history.
+</Warning>
+
+---
+
+### deploy(slug)
+
+Deploy an agent.
+
+```typescript
+const agent = await client.agents.deploy(slug);
+```
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `slug` | `string` | The agent's slug |
+
+**Returns:** `Promise<Agent>`
+
+**Example:**
+
+```typescript
+const agent = await client.agents.deploy('my-agent');
+console.log(agent.status); // 'deploying' → 'active'
+```
+
+<Note>
+Deployment is asynchronous. The returned agent will have status `deploying`. Poll `get()` to check when it becomes `active`.
+</Note>
+
+---
+
+### stop(slug)
+
+Stop a running agent.
+
+```typescript
+const agent = await client.agents.stop(slug);
+```
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `slug` | `string` | The agent's slug |
+
+**Returns:** `Promise<Agent>`
+
+**Example:**
+
+```typescript
+const agent = await client.agents.stop('my-agent');
+console.log(agent.status); // 'stopped'
+```
+
+---
+
+### invoke(slug, prompt)
+
+Invoke an agent with a prompt.
+
+```typescript
+const result = await client.agents.invoke(slug, prompt, options?);
+```
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `slug` | `string` | The agent's slug |
+| `prompt` | `string` | The prompt to send |
+| `options.timeout` | `number` | Timeout in ms (default: 120000) |
+
+**Returns:** `Promise<InvocationResult>`
+
+**Example:**
+
+```typescript
+const result = await client.agents.invoke(
+  'my-agent',
+  'What files are in the current directory?'
+);
+
+console.log(result.response);
+console.log(`Cost: $${result.total_cost_usd}`);
+console.log(`Duration: ${result.duration_ms}ms`);
+```
+
+**Response:**
+
+```typescript
+{
+  invocation_id: 'inv_abc123',
+  response: 'The current directory contains...',
+  input_tokens: 124,
+  output_tokens: 1110,
+  total_cost_usd: 0.02,
+  duration_ms: 2341,
+  status: 'completed'
+}
+```
+
+## Full Example
+
+```typescript
+import { CastariClient } from '@castari/sdk';
+
+async function main() {
+  const client = new CastariClient({
+    apiKey: process.env.CASTARI_API_KEY,
+  });
+
+  // List all agents
+  const agents = await client.agents.list();
+  console.log(`You have ${agents.length} agents`);
+
+  // Get specific agent
+  const agent = await client.agents.get('my-agent');
+
+  if (agent.status !== 'active') {
+    // Deploy if not active
+    await client.agents.deploy('my-agent');
+  }
+
+  // Invoke
+  const result = await client.agents.invoke(
+    'my-agent',
+    'Write a haiku about coding'
+  );
+
+  console.log(result.response);
+}
+
+main();
+```
+
+## See Also
+
+- [Secrets API](/sdk/secrets) — Manage secrets
+- [Types](/sdk/types) — TypeScript interfaces
+- [cast invoke](/cli/invoke) — CLI equivalent

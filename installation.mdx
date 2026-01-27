@@ -1,0 +1,114 @@
+---
+title: "Installation"
+description: "Install the Castari CLI and SDK"
+---
+
+# Installation
+
+Install the Castari CLI to deploy and manage agents from your terminal.
+
+## CLI Installation
+
+<Tabs>
+  <Tab title="npm">
+    ```bash
+    npm install -g @castari/cli
+    ```
+  </Tab>
+  <Tab title="yarn">
+    ```bash
+    yarn global add @castari/cli
+    ```
+  </Tab>
+  <Tab title="pnpm">
+    ```bash
+    pnpm add -g @castari/cli
+    ```
+  </Tab>
+</Tabs>
+
+### Verify Installation
+
+```bash
+cast --version
+```
+
+You should see output like:
+
+```
+@castari/cli/0.1.0
+```
+
+## SDK Installation
+
+If you want to use Castari programmatically (e.g., in a Node.js app or CI/CD pipeline):
+
+<Tabs>
+  <Tab title="npm">
+    ```bash
+    npm install @castari/sdk
+    ```
+  </Tab>
+  <Tab title="yarn">
+    ```bash
+    yarn add @castari/sdk
+    ```
+  </Tab>
+  <Tab title="pnpm">
+    ```bash
+    pnpm add @castari/sdk
+    ```
+  </Tab>
+</Tabs>
+
+## System Requirements
+
+| Requirement | Version |
+|-------------|---------|
+| Node.js | 18.0 or higher |
+| npm | 8.0 or higher |
+| Operating System | macOS, Linux, Windows |
+
+## Updating
+
+To update to the latest version:
+
+```bash
+npm update -g @castari/cli
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Permission denied when installing globally">
+    If you see `EACCES` errors, either:
+
+    1. Use a Node version manager like [nvm](https://github.com/nvm-sh/nvm) (recommended)
+    2. Or fix npm permissions: [npm docs](https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally)
+  </Accordion>
+
+  <Accordion title="Command not found after installation">
+    Make sure your global npm bin directory is in your PATH:
+
+    ```bash
+    npm bin -g
+    ```
+
+    Add the output directory to your shell's PATH.
+  </Accordion>
+
+  <Accordion title="Node.js version too old">
+    Update Node.js to version 18 or higher. We recommend using [nvm](https://github.com/nvm-sh/nvm):
+
+    ```bash
+    nvm install 18
+    nvm use 18
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<Card title="Quick Start" icon="rocket" href="/quickstart">
+  Deploy your first agent in under 5 minutes
+</Card>

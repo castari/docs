@@ -1,0 +1,208 @@
+---
+title: "Types"
+description: "TypeScript interfaces and types"
+---
+
+# Types
+
+All TypeScript types exported by `@castari/sdk`.
+
+## Agent
+
+Represents a Castari agent.
+
+```typescript
+interface Agent {
+  id: string;
+  name: string;
+  slug: string;
+  status: AgentStatus;
+  git_repo_url?: string;
+  sandbox_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `string` | Unique identifier (e.g., `agt_abc123`) |
+| `name` | `string` | Display name |
+| `slug` | `string` | URL-safe identifier |
+| `status` | `AgentStatus` | Current status |
+| `git_repo_url` | `string?` | Source repository URL |
+| `sandbox_id` | `string?` | Active sandbox ID (when deployed) |
+| `created_at` | `string` | ISO 8601 timestamp |
+| `updated_at` | `string` | ISO 8601 timestamp |
+
+---
+
+## AgentStatus
+
+Possible agent statuses.
+
+```typescript
+type AgentStatus =
+  | 'pending'
+  | 'deploying'
+  | 'active'
+  | 'stopped'
+  | 'error';
+```
+
+| Status | Description |
+|--------|-------------|
+| `pending` | Created but never deployed |
+| `deploying` | Deployment in progress |
+| `active` | Running and ready for invocations |
+| `stopped` | Manually stopped |
+| `error` | Deployment or runtime error |
+
+---
+
+## InvocationResult
+
+Response from invoking an agent.
+
+```typescript
+interface InvocationResult {
+  invocation_id: string;
+  response: string;
+  input_tokens: number;
+  output_tokens: number;
+  total_cost_usd: number;
+  duration_ms: number;
+  status: InvocationStatus;
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `invocation_id` | `string` | Unique identifier (e.g., `inv_abc123`) |
+| `response` | `string` | Agent's response text |
+| `input_tokens` | `number` | Tokens in the prompt |
+| `output_tokens` | `number` | Tokens in the response |
+| `total_cost_usd` | `number` | Total cost in USD |
+| `duration_ms` | `number` | Execution time in milliseconds |
+| `status` | `InvocationStatus` | Completion status |
+
+---
+
+## InvocationStatus
+
+Possible invocation statuses.
+
+```typescript
+type InvocationStatus =
+  | 'completed'
+  | 'failed'
+  | 'timeout';
+```
+
+---
+
+## Secret
+
+Represents a secret (metadata only — values are never returned).
+
+```typescript
+interface Secret {
+  key: string;
+  created_at: string;
+  updated_at: string;
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `key` | `string` | Secret name (e.g., `OPENAI_API_KEY`) |
+| `created_at` | `string` | ISO 8601 timestamp |
+| `updated_at` | `string` | ISO 8601 timestamp |
+
+---
+
+## CastariClientOptions
+
+Options for creating a client.
+
+```typescript
+interface CastariClientOptions {
+  apiKey?: string;
+  token?: string;
+  baseUrl?: string;
+}
+```
+
+---
+
+## CreateAgentRequest
+
+Request body for creating an agent.
+
+```typescript
+interface CreateAgentRequest {
+  slug: string;
+  name?: string;
+  git_repo_url?: string;
+}
+```
+
+---
+
+## CastariError
+
+Error thrown by SDK operations.
+
+```typescript
+class CastariError extends Error {
+  status: number;
+  code?: string;
+  detail?: string;
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `message` | `string` | Human-readable error message |
+| `status` | `number` | HTTP status code |
+| `code` | `string?` | Error code (e.g., `agent_not_found`) |
+| `detail` | `string?` | Additional details |
+
+**Example:**
+
+```typescript
+try {
+  await client.agents.get('nonexistent');
+} catch (error) {
+  if (error instanceof CastariError) {
+    console.log(error.status);  // 404
+    console.log(error.message); // "Agent not found"
+  }
+}
+```
+
+---
+
+## Importing Types
+
+All types are exported from the main package:
+
+```typescript
+import {
+  CastariClient,
+  CastariClientOptions,
+  CastariError,
+  Agent,
+  AgentStatus,
+  InvocationResult,
+  InvocationStatus,
+  Secret,
+  CreateAgentRequest,
+} from '@castari/sdk';
+```
+
+## See Also
+
+- [CastariClient](/sdk/client) — Client setup
+- [Agents API](/sdk/agents) — Agent methods
+- [Secrets API](/sdk/secrets) — Secrets methods

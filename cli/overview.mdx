@@ -1,0 +1,79 @@
+---
+title: "CLI Overview"
+description: "The cast command-line interface"
+---
+
+# CLI Overview
+
+The `cast` CLI is the fastest way to deploy and manage agents on Castari.
+
+## Installation
+
+```bash
+npm install -g @castari/cli
+```
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| [`cast login`](/cli/login) | Authenticate with Castari |
+| [`cast logout`](/cli/login#logout) | Clear stored credentials |
+| [`cast whoami`](/cli/login#whoami) | Show current user |
+| [`cast init`](/cli/init) | Create a new agent from a template |
+| [`cast deploy`](/cli/deploy) | Deploy an agent |
+| [`cast invoke`](/cli/invoke) | Invoke a deployed agent |
+| [`cast agents list`](/cli/agents) | List all agents |
+| [`cast agents get`](/cli/agents#cast-agents-get) | Get agent details |
+| [`cast agents delete`](/cli/agents#cast-agents-delete) | Delete an agent |
+| [`cast secrets list`](/cli/secrets) | List secrets for an agent |
+| [`cast secrets set`](/cli/secrets#cast-secrets-set) | Set a secret |
+| [`cast secrets delete`](/cli/secrets#cast-secrets-delete) | Delete a secret |
+| [`cast logs`](/cli/logs) | Stream agent logs |
+
+## Global Options
+
+All commands support these options:
+
+| Option | Description |
+|--------|-------------|
+| `--help` | Show help for a command |
+| `--version` | Show CLI version |
+| `--debug` | Enable debug output |
+
+## Configuration
+
+The CLI stores configuration in `~/.castari/`:
+
+```
+~/.castari/
+├── config.json      # API URL, preferences
+└── credentials.json # Auth tokens (do not share!)
+```
+
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `CASTARI_API_URL` | Override API base URL |
+| `CASTARI_API_KEY` | Use API key instead of OAuth |
+
+## Examples
+
+```bash
+# Full workflow
+cast login
+cast init my-agent
+cd my-agent
+cast deploy
+cast invoke my-agent "Hello!"
+
+# Check agent status
+cast agents get my-agent
+
+# Add a secret
+cast secrets set my-agent OPENAI_API_KEY sk-xxx
+
+# View logs
+cast logs my-agent
+```

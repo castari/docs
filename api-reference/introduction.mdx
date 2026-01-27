@@ -1,33 +1,165 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: "API Reference"
+description: "Castari REST API documentation"
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+# API Reference
 
-## Welcome
+The Castari API lets you programmatically manage agents, deployments, and invocations.
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+## Base URL
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+```
+https://api.castari.com
+```
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+All API requests require authentication via one of these methods:
+
+### API Key (Recommended)
+
+Include your API key in the `X-API-Key` header:
+
+```bash
+curl https://api.castari.com/api/v1/agents \
+  -H "X-API-Key: cast_xxxxxxxx_xxxxxxxxxx"
+```
+
+API keys look like: `cast_xxxxxxxx_xxxxxxxxxx`
+
+Generate one in the [Castari Dashboard](https://app.castari.com).
+
+### OAuth Token
+
+Include a Bearer token in the `Authorization` header:
+
+```bash
+curl https://api.castari.com/api/v1/agents \
+  -H "Authorization: Bearer eyJhbGciOiJSUzI1NiIs..."
+```
+
+## Rate Limits
+
+| Endpoint Type | Limit |
+|---------------|-------|
+| Read operations (GET) | 100 requests/minute |
+| Write operations (POST, PUT, DELETE) | 60 requests/minute |
+| Invocations | 10 requests/minute |
+
+When rate limited, you'll receive a `429 Too Many Requests` response:
 
 ```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+{
+  "detail": "Rate limit exceeded. Try again in 30 seconds."
+}
+```
+
+## Errors
+
+All errors return JSON with a `detail` field:
+
+```json
+{
+  "detail": "Agent not found"
+}
+```
+
+### Error Codes
+
+| Status | Meaning |
+|--------|---------|
+| `400` | Bad Request — Invalid parameters |
+| `401` | Unauthorized — Missing or invalid authentication |
+| `403` | Forbidden — Insufficient permissions |
+| `404` | Not Found — Resource doesn't exist |
+| `422` | Validation Error — Invalid request body |
+| `429` | Rate Limited — Too many requests |
+| `500` | Server Error — Something went wrong |
+
+### Validation Errors
+
+For `422` responses, errors include field-level details:
+
+```json
+{
+  "detail": [
+    {
+      "loc": ["body", "slug"],
+      "msg": "field required",
+      "type": "value_error.missing"
+    }
+  ]
+}
+```
+
+## Pagination
+
+List endpoints support pagination:
+
+```bash
+GET /api/v1/agents?limit=10&offset=0
+```
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `limit` | 20 | Max items to return (1-100) |
+| `offset` | 0 | Number of items to skip |
+
+## Endpoints Overview
+
+### Agents
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/agents` | List all agents |
+| `POST` | `/api/v1/agents` | Create an agent |
+| `GET` | `/api/v1/agents/{slug}` | Get agent details |
+| `DELETE` | `/api/v1/agents/{slug}` | Delete an agent |
+| `POST` | `/api/v1/agents/{slug}/deploy` | Deploy an agent |
+| `POST` | `/api/v1/agents/{slug}/stop` | Stop an agent |
+| `POST` | `/api/v1/agents/{slug}/invoke` | Invoke an agent |
+
+### Secrets
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/agents/{slug}/secrets` | List secrets |
+| `POST` | `/api/v1/agents/{slug}/secrets` | Set a secret |
+| `DELETE` | `/api/v1/agents/{slug}/secrets/{key}` | Delete a secret |
+
+### Usage
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/usage` | Get usage summary |
+| `GET` | `/api/v1/usage/daily` | Get daily breakdown |
+
+## SDKs
+
+For easier integration, use our official SDKs:
+
+- **TypeScript/JavaScript:** `npm install @castari/sdk`
+- **CLI:** `npm install -g @castari/cli`
+
+See the [SDK Reference](/sdk/overview) for details.
+
+## Example: Full Workflow
+
+```bash
+# 1. Create an agent
+curl -X POST https://api.castari.com/api/v1/agents \
+  -H "X-API-Key: cast_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{"slug": "my-agent", "name": "My Agent"}'
+
+# 2. Deploy the agent
+curl -X POST https://api.castari.com/api/v1/agents/my-agent/deploy \
+  -H "X-API-Key: cast_xxx"
+
+# 3. Invoke the agent
+curl -X POST https://api.castari.com/api/v1/agents/my-agent/invoke \
+  -H "X-API-Key: cast_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "Hello, world!"}'
 ```

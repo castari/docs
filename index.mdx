@@ -1,97 +1,73 @@
 ---
 title: "Introduction"
-description: "Welcome to the new home for your documentation"
+description: "Deploy Claude agents with one command"
 ---
 
-## Setting up
+# Castari
 
-Get your documentation site up and running in minutes.
+**Deploy Claude agents with one command.**
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
+Castari is the natural runtime for AI agents. We deploy your Claude agents in secure, auto-scaling sandboxes — so you go from prototype to production in minutes, not weeks.
 
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Deploy your first agent in under 5 minutes
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="CLI Reference" icon="terminal" href="/cli/overview">
+    All commands at your fingertips
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="SDK Reference" icon="code" href="/sdk/overview">
+    Build programmatically with TypeScript
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="API Reference" icon="server" href="/api-reference/introduction">
+    Direct REST API access
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## How It Works
 
-Everything you need to create world-class documentation.
+```bash
+# 1. Install
+npm install -g @castari/cli
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+# 2. Login
+cast login
 
-## Need inspiration?
+# 3. Create an agent
+cast init my-agent
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
+# 4. Deploy
+cd my-agent && cast deploy
+
+# 5. Invoke
+cast invoke my-agent "Hello!"
+```
+
+That's it. Your agent is now running in a secure sandbox, ready to scale.
+
+## Why Castari?
+
+<CardGroup cols={3}>
+  <Card title="Fast" icon="bolt">
+    Deploy in seconds, not hours. No infrastructure to manage.
+  </Card>
+  <Card title="Secure" icon="shield">
+    Every agent runs in an isolated sandbox. Your code, your data, protected.
+  </Card>
+  <Card title="Scalable" icon="chart-line">
+    Per-request scaling. Fresh sandbox for every invocation. Pay for what you use.
+  </Card>
+</CardGroup>
+
+## What You Can Build
+
+- **Coding agents** — Review code, write scripts, analyze repos
+- **Research agents** — Search the web, synthesize findings, generate reports
+- **Support agents** — Handle tickets, look up data, escalate issues
+- **Custom agents** — Any Claude-powered workflow with tools
+
+## Get Started
+
+<Card title="Quick Start Guide" icon="play" href="/quickstart">
+  Deploy your first agent in under 5 minutes
 </Card>

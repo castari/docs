@@ -1,0 +1,112 @@
+---
+title: "cast invoke"
+description: "Invoke a deployed agent"
+---
+
+# cast invoke
+
+Send a prompt to a deployed agent and get a response.
+
+## Usage
+
+```bash
+cast invoke <slug> <prompt> [options]
+```
+
+## Arguments
+
+| Argument | Description | Required |
+|----------|-------------|----------|
+| `slug` | Agent slug | Yes |
+| `prompt` | The prompt to send | Yes |
+
+## Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--stream` | Stream response in real-time | `false` |
+| `--timeout <ms>` | Timeout in milliseconds | `120000` |
+| `--json` | Output raw JSON response | `false` |
+
+## Examples
+
+### Basic invocation
+
+```bash
+cast invoke my-agent "What files are in the current directory?"
+```
+
+Output:
+
+```
+The current directory contains:
+- src/index.ts
+- package.json
+- castari.json
+- CLAUDE.md
+- README.md
+```
+
+### Stream response
+
+```bash
+cast invoke my-agent "Write a haiku about coding" --stream
+```
+
+Response streams token by token as generated.
+
+### JSON output
+
+```bash
+cast invoke my-agent "Hello" --json
+```
+
+```json
+{
+  "invocation_id": "inv_abc123",
+  "response": "Hello! How can I help you today?",
+  "input_tokens": 12,
+  "output_tokens": 8,
+  "total_cost_usd": 0.0003,
+  "duration_ms": 1234,
+  "status": "completed"
+}
+```
+
+### Custom timeout
+
+```bash
+cast invoke my-agent "Run a complex analysis" --timeout 300000
+```
+
+## What Happens During Invoke
+
+1. **Request received** — Your prompt is sent to the Castari API
+2. **Sandbox activated** — A fresh sandbox is spun up for this request
+3. **Agent runs** — Your agent code executes with the prompt as input
+4. **Response collected** — Output is captured and returned to you
+5. **Cleanup** — Sandbox is destroyed. No state persists.
+
+## Errors
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `Agent not found` | Invalid slug | Check `cast agents list` for correct slug |
+| `Agent not active` | Agent not deployed | Run `cast deploy` first |
+| `Timeout exceeded` | Agent took too long | Increase `--timeout` or optimize agent |
+| `Invocation failed` | Agent error | Check `cast logs` for details |
+
+## Piping Input
+
+You can also pipe input to invoke:
+
+```bash
+echo "Explain this code" | cast invoke my-agent --stdin
+cat prompt.txt | cast invoke my-agent --stdin
+```
+
+## See Also
+
+- [cast deploy](/cli/deploy) — Deploy an agent
+- [cast logs](/cli/logs) — View agent logs
+- [SDK invoke](/sdk/agents#invokeslug-prompt) — Invoke programmatically

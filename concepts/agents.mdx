@@ -1,0 +1,168 @@
+---
+title: "Agents"
+description: "What agents are and how they work"
+---
+
+# Agents
+
+An agent is your Claude-powered application deployed on Castari.
+
+## What is an Agent?
+
+An agent is a program that:
+
+1. Receives a **prompt** as input
+2. Uses **Claude** to reason and decide on actions
+3. Executes **tools** to interact with the world
+4. Returns a **response**
+
+Agents can do things like:
+- Read and write files
+- Execute shell commands
+- Search the web
+- Query databases
+- Call external APIs
+
+## Agent Structure
+
+Every Castari agent has this structure:
+
+```
+my-agent/
+├── castari.json      # Agent configuration
+├── package.json      # Dependencies
+├── tsconfig.json     # TypeScript config
+├── src/
+│   └── index.ts      # Entry point
+├── CLAUDE.md         # Agent instructions
+└── README.md         # Documentation
+```
+
+### castari.json
+
+The agent configuration file:
+
+```json
+{
+  "name": "my-agent",
+  "version": "0.1.0",
+  "entrypoint": "src/index.ts",
+  "runtime": "node"
+}
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `name` | Yes | Display name |
+| `version` | Yes | Semantic version |
+| `entrypoint` | Yes | Path to main file |
+| `runtime` | Yes | Runtime (`node`) |
+
+### CLAUDE.md
+
+Instructions for Claude that shape the agent's behavior:
+
+```markdown
+# Research Agent
+
+You are a research assistant that finds and synthesizes information.
+
+## Guidelines
+- Always cite sources
+- Present multiple perspectives
+- Summarize findings at the end
+```
+
+## Agent Lifecycle
+
+```
+pending → deploying → active → stopped
+                ↓
+              error
+```
+
+| Status | Description |
+|--------|-------------|
+| `pending` | Created but never deployed |
+| `deploying` | Deployment in progress |
+| `active` | Running and accepting invocations |
+| `stopped` | Manually stopped (can be redeployed) |
+| `error` | Deployment or runtime failure |
+
+## Slugs and Naming
+
+Every agent has a **slug** — a URL-safe identifier:
+
+- Slugs are lowercase alphanumeric with hyphens
+- Example: `my-agent`, `research-bot-v2`
+- Slugs must be unique per user
+- Used in CLI commands: `cast invoke my-agent "Hello"`
+
+## Entry Point Contract
+
+Your agent's entry point must:
+
+1. **Read prompt from stdin**
+2. **Process with Claude and tools**
+3. **Write response to stdout**
+
+```typescript
+// Read
+let prompt = "";
+process.stdin.on("data", (chunk) => (prompt += chunk));
+process.stdin.on("end", async () => {
+  // Process
+  const response = await runAgent(prompt);
+  // Write
+  console.log(response);
+});
+```
+
+## Tools
+
+Agents use tools to take actions. Tools are defined as schemas:
+
+```typescript
+const tools: Anthropic.Tool[] = [
+  {
+    name: "read_file",
+    description: "Read the contents of a file",
+    input_schema: {
+      type: "object",
+      properties: {
+        path: { type: "string" }
+      },
+      required: ["path"]
+    }
+  }
+];
+```
+
+When Claude decides to use a tool, your code executes it:
+
+```typescript
+async function handleTool(name: string, input: any): Promise<string> {
+  switch (name) {
+    case "read_file":
+      return fs.readFileSync(input.path, "utf-8");
+    // ... other tools
+  }
+}
+```
+
+## See Also
+
+<CardGroup cols={2}>
+  <Card title="Your First Agent" icon="rocket" href="/first-agent">
+    Build and customize agents
+  </Card>
+  <Card title="Templates" icon="grid" href="/guides/templates">
+    Start with pre-built agents
+  </Card>
+  <Card title="Custom Agents" icon="pen" href="/guides/custom-agents">
+    Build from scratch
+  </Card>
+  <Card title="Sandboxes" icon="box" href="/concepts/sandboxes">
+    Execution environment
+  </Card>
+</CardGroup>

@@ -1,0 +1,345 @@
+---
+title: "Building Custom Agents"
+description: "Build agents from scratch with the Claude Agent SDK"
+---
+
+# Building Custom Agents
+
+Learn how to build agents from scratch using the Claude Agent SDK.
+
+## Prerequisites
+
+- Node.js 18+
+- Castari CLI installed (`npm install -g @castari/cli`)
+- Basic TypeScript knowledge
+
+## Agent Architecture
+
+A Castari agent is a Node.js program that:
+
+1. Reads a prompt from **stdin**
+2. Processes with **Claude** and executes **tools**
+3. Writes response to **stdout**
+
+```
+stdin (prompt) → Agent (Claude + Tools) → stdout (response)
+```
+
+## Creating an Agent from Scratch
+
+### 1. Initialize the Project
+
+```bash
+mkdir my-custom-agent
+cd my-custom-agent
+npm init -y
+npm install @anthropic-ai/sdk typescript tsx
+```
+
+### 2. Create castari.json
+
+```json
+{
+  "name": "my-custom-agent",
+  "version": "0.1.0",
+  "entrypoint": "src/index.ts",
+  "runtime": "node"
+}
+```
+
+### 3. Create package.json Scripts
+
+```json
+{
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc"
+  }
+}
+```
+
+### 4. Write the Agent
+
+```typescript
+// src/index.ts
+import Anthropic from "@anthropic-ai/sdk";
+import * as fs from "fs";
+import { execSync } from "child_process";
+
+const client = new Anthropic();
+
+// Read CLAUDE.md for system instructions
+const systemPrompt = fs.existsSync("CLAUDE.md")
+  ? fs.readFileSync("CLAUDE.md", "utf-8")
+  : "You are a helpful assistant.";
+
+// Define tools
+const tools: Anthropic.Tool[] = [
+  {
+    name: "read_file",
+    description: "Read the contents of a file",
+    input_schema: {
+      type: "object",
+      properties: {
+        path: { type: "string", description: "Path to the file" }
+      },
+      required: ["path"]
+    }
+  },
+  {
+    name: "write_file",
+    description: "Write content to a file",
+    input_schema: {
+      type: "object",
+      properties: {
+        path: { type: "string", description: "Path to the file" },
+        content: { type: "string", description: "Content to write" }
+      },
+      required: ["path", "content"]
+    }
+  },
+  {
+    name: "bash",
+    description: "Execute a bash command",
+    input_schema: {
+      type: "object",
+      properties: {
+        command: { type: "string", description: "Command to execute" }
+      },
+      required: ["command"]
+    }
+  }
+];
+
+// Handle tool execution
+async function executeTool(name: string, input: any): Promise<string> {
+  switch (name) {
+    case "read_file":
+      return fs.readFileSync(input.path, "utf-8");
+    case "write_file":
+      fs.writeFileSync(input.path, input.content);
+      return `Wrote ${input.content.length} bytes to ${input.path}`;
+    case "bash":
+      return execSync(input.command, { encoding: "utf-8" });
+    default:
+      throw new Error(`Unknown tool: ${name}`);
+  }
+}
+
+// Agent loop
+async function runAgent(prompt: string): Promise<string> {
+  const messages: Anthropic.MessageParam[] = [
+    { role: "user", content: prompt }
+  ];
+
+  while (true) {
+    const response = await client.messages.create({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 4096,
+      system: systemPrompt,
+      tools,
+      messages
+    });
+
+    // Collect text and tool uses
+    let textResponse = "";
+    const toolUses: Anthropic.ToolUseBlock[] = [];
+
+    for (const block of response.content) {
+      if (block.type === "text") {
+        textResponse += block.text;
+      } else if (block.type === "tool_use") {
+        toolUses.push(block);
+      }
+    }
+
+    // If no tool uses, we're done
+    if (toolUses.length === 0) {
+      return textResponse;
+    }
+
+    // Execute tools and continue
+    messages.push({ role: "assistant", content: response.content });
+
+    const toolResults: Anthropic.ToolResultBlockParam[] = [];
+    for (const toolUse of toolUses) {
+      try {
+        const result = await executeTool(toolUse.name, toolUse.input);
+        toolResults.push({
+          type: "tool_result",
+          tool_use_id: toolUse.id,
+          content: result
+        });
+      } catch (error) {
+        toolResults.push({
+          type: "tool_result",
+          tool_use_id: toolUse.id,
+          content: `Error: ${error.message}`,
+          is_error: true
+        });
+      }
+    }
+
+    messages.push({ role: "user", content: toolResults });
+  }
+}
+
+// Entry point: read from stdin, write to stdout
+async function main() {
+  let prompt = "";
+  for await (const chunk of process.stdin) {
+    prompt += chunk;
+  }
+
+  const response = await runAgent(prompt.trim());
+  console.log(response);
+}
+
+main().catch(console.error);
+```
+
+### 5. Create CLAUDE.md
+
+```markdown
+# My Custom Agent
+
+You are a helpful coding assistant.
+
+## Capabilities
+- Read and write files
+- Execute bash commands
+- Help with coding tasks
+
+## Guidelines
+- Be concise and direct
+- Always explain what you're about to do
+- Ask for clarification when requirements are unclear
+```
+
+### 6. Test Locally
+
+```bash
+echo "What files are in the current directory?" | npm run dev
+```
+
+### 7. Deploy
+
+```bash
+cast deploy
+```
+
+## Adding Custom Tools
+
+### Tool Schema
+
+Tools are defined with JSON Schema:
+
+```typescript
+{
+  name: "get_weather",
+  description: "Get weather for a location",
+  input_schema: {
+    type: "object",
+    properties: {
+      location: {
+        type: "string",
+        description: "City name"
+      },
+      units: {
+        type: "string",
+        enum: ["celsius", "fahrenheit"],
+        description: "Temperature units"
+      }
+    },
+    required: ["location"]
+  }
+}
+```
+
+### Tool Handler
+
+```typescript
+case "get_weather":
+  const weather = await fetchWeather(input.location, input.units);
+  return JSON.stringify(weather);
+```
+
+### External API Integration
+
+```typescript
+import axios from 'axios';
+
+case "get_weather":
+  const response = await axios.get(
+    `https://api.weather.com/v1/current`,
+    {
+      params: { q: input.location },
+      headers: { 'X-API-Key': process.env.WEATHER_API_KEY }
+    }
+  );
+  return JSON.stringify(response.data);
+```
+
+Don't forget to set the secret:
+
+```bash
+cast secrets set my-agent WEATHER_API_KEY your-key-here
+```
+
+## Best Practices
+
+### Error Handling
+
+Always handle tool errors gracefully:
+
+```typescript
+try {
+  const result = await executeTool(toolUse.name, toolUse.input);
+  toolResults.push({ type: "tool_result", tool_use_id: toolUse.id, content: result });
+} catch (error) {
+  toolResults.push({
+    type: "tool_result",
+    tool_use_id: toolUse.id,
+    content: `Error: ${error.message}`,
+    is_error: true
+  });
+}
+```
+
+### Timeout Handling
+
+For long-running operations:
+
+```typescript
+const timeout = (ms: number) => new Promise((_, reject) =>
+  setTimeout(() => reject(new Error('Timeout')), ms)
+);
+
+const result = await Promise.race([
+  executeTool(name, input),
+  timeout(30000) // 30 second timeout
+]);
+```
+
+### Logging
+
+Write debug info to stderr (doesn't affect response):
+
+```typescript
+console.error(`[DEBUG] Executing tool: ${name}`);
+console.error(`[DEBUG] Input: ${JSON.stringify(input)}`);
+```
+
+## See Also
+
+<CardGroup cols={2}>
+  <Card title="Templates" icon="grid" href="/guides/templates">
+    Start with pre-built agents
+  </Card>
+  <Card title="MCP Integration" icon="plug" href="/guides/mcp">
+    Model Context Protocol tools
+  </Card>
+  <Card title="Debugging" icon="bug" href="/guides/debugging">
+    Troubleshooting tips
+  </Card>
+</CardGroup>

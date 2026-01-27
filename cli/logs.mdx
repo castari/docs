@@ -1,0 +1,134 @@
+---
+title: "cast logs"
+description: "View agent logs and invocation history"
+---
+
+# cast logs
+
+View logs and invocation history for an agent.
+
+## Usage
+
+```bash
+cast logs <slug> [options]
+```
+
+## Arguments
+
+| Argument | Description | Required |
+|----------|-------------|----------|
+| `slug` | Agent slug | Yes |
+
+## Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `-n, --lines <count>` | Number of recent invocations | `10` |
+| `-f, --follow` | Stream logs in real-time | `false` |
+| `--json` | Output as JSON | `false` |
+
+## Examples
+
+### View recent invocations
+
+```bash
+cast logs my-agent
+```
+
+Output:
+
+```
+INVOCATION           STATUS      TOKENS    COST      DURATION
+inv_abc123           completed   1,234     $0.02     2.3s
+inv_def456           completed   856       $0.01     1.8s
+inv_ghi789           failed      124       $0.00     0.5s
+inv_jkl012           completed   2,100     $0.03     4.1s
+```
+
+### View more history
+
+```bash
+cast logs my-agent -n 50
+```
+
+### Stream logs in real-time
+
+```bash
+cast logs my-agent --follow
+```
+
+This streams new invocations as they happen. Press `Ctrl+C` to stop.
+
+### JSON output
+
+```bash
+cast logs my-agent --json
+```
+
+```json
+[
+  {
+    "invocation_id": "inv_abc123",
+    "status": "completed",
+    "input_tokens": 124,
+    "output_tokens": 1110,
+    "total_cost_usd": 0.02,
+    "duration_ms": 2341,
+    "created_at": "2024-01-15T14:30:00Z"
+  }
+]
+```
+
+## Viewing Invocation Details
+
+To see full details of a specific invocation:
+
+```bash
+cast logs my-agent --invocation inv_abc123
+```
+
+Output:
+
+```
+Invocation: inv_abc123
+Status:     completed
+Created:    2024-01-15 14:30:00
+
+Input:
+  What files are in the current directory?
+
+Output:
+  The current directory contains:
+  - src/index.ts
+  - package.json
+  - castari.json
+
+Tokens:     124 in / 1,110 out
+Cost:       $0.02
+Duration:   2.3s
+```
+
+## Debugging Failed Invocations
+
+When an invocation fails, use logs to diagnose:
+
+```bash
+cast logs my-agent --invocation inv_ghi789
+```
+
+```
+Invocation: inv_ghi789
+Status:     failed
+
+Error:
+  Tool execution failed: read_file
+  ENOENT: no such file or directory, open '/nonexistent/file.txt'
+
+Tokens:     124 in / 0 out
+Duration:   0.5s
+```
+
+## See Also
+
+- [cast invoke](/cli/invoke) — Invoke an agent
+- [Debugging Guide](/guides/debugging) — Troubleshooting tips

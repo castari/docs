@@ -1,0 +1,97 @@
+---
+title: "cast init"
+description: "Create a new agent from a template"
+---
+
+# cast init
+
+Create a new agent from a template.
+
+## Usage
+
+```bash
+cast init <name> [options]
+```
+
+## Arguments
+
+| Argument | Description | Required |
+|----------|-------------|----------|
+| `name` | Name for the new agent directory | Yes |
+
+## Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `-t, --template <name>` | Template to use | Interactive prompt |
+| `--no-install` | Skip `npm install` | `false` |
+
+## Templates
+
+| Template | Description |
+|----------|-------------|
+| `default` | Coding agent with file and bash tools (like Claude Code) |
+| `research-agent` | Deep research with web search and document synthesis |
+| `support-agent` | Customer support with ticket handling and escalation |
+| `mcp-tools` | Agent with example MCP server integration |
+
+## Examples
+
+### Interactive mode
+
+```bash
+cast init my-agent
+```
+
+Prompts you to select a template:
+
+```
+? Select a template:
+❯ default — Coding agent with file and bash tools (like Claude Code)
+  research-agent — Deep research with web search and document synthesis
+  support-agent — Customer support with ticket handling and escalation
+  mcp-tools — Agent with example MCP server integration
+
+✓ Created my-agent/ from default template
+✓ Installed dependencies
+```
+
+### Specify template
+
+```bash
+cast init my-agent --template research-agent
+```
+
+### Skip npm install
+
+```bash
+cast init my-agent --no-install
+```
+
+## Created Files
+
+```
+my-agent/
+├── castari.json      # Agent configuration
+├── package.json      # Dependencies
+├── tsconfig.json     # TypeScript config
+├── src/
+│   └── index.ts      # Agent entry point
+├── CLAUDE.md         # Agent instructions
+└── README.md         # Documentation
+```
+
+## Next Steps
+
+After creating an agent:
+
+```bash
+cd my-agent
+cast deploy
+```
+
+## See Also
+
+- [Your First Agent](/first-agent) — Understand agent structure
+- [Templates Guide](/guides/templates) — Detailed template documentation
+- [cast deploy](/cli/deploy) — Deploy your agent

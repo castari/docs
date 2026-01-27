@@ -1,0 +1,98 @@
+---
+title: "cast login"
+description: "Authenticate with Castari"
+---
+
+# cast login
+
+Authenticate with Castari via browser-based OAuth.
+
+## Usage
+
+```bash
+cast login
+```
+
+## What Happens
+
+1. Opens your default browser to Castari login page
+2. You sign in (or create an account)
+3. Browser redirects back, CLI captures the token
+4. Credentials saved to `~/.castari/credentials.json`
+
+## Output
+
+```
+Opening browser to authenticate...
+✓ Logged in as you@example.com
+```
+
+## Options
+
+| Option | Description |
+|--------|-------------|
+| `--no-browser` | Print login URL instead of opening browser |
+
+### Headless Authentication
+
+For CI/CD or headless environments:
+
+```bash
+cast login --no-browser
+```
+
+This prints the URL for manual authentication.
+
+<Tip>
+For automated environments, use an API key instead of OAuth. See [Environment Variables](/cli/overview#environment-variables).
+</Tip>
+
+---
+
+# cast logout
+
+Clear stored credentials.
+
+## Usage
+
+```bash
+cast logout
+```
+
+## Output
+
+```
+✓ Logged out
+```
+
+This deletes `~/.castari/credentials.json`.
+
+---
+
+# cast whoami
+
+Show the currently authenticated user.
+
+## Usage
+
+```bash
+cast whoami
+```
+
+## Output
+
+```
+Logged in as: you@example.com
+User ID: usr_abc123
+```
+
+If not logged in:
+
+```
+Not logged in. Run 'cast login' to authenticate.
+```
+
+## See Also
+
+- [Installation](/installation) — Install the CLI
+- [Quick Start](/quickstart) — Deploy your first agent

@@ -1,0 +1,142 @@
+---
+title: "How Castari Works"
+description: "Architecture and key concepts"
+---
+
+# How Castari Works
+
+Understand how Castari deploys and runs your agents.
+
+## Architecture Overview
+
+```
+┌─────────────┐      ┌──────────────────┐      ┌─────────────┐
+│   You       │      │  Castari API     │      │  E2B        │
+│  (CLI/SDK)  │ ───▶ │  (Control Plane) │ ───▶ │  Sandboxes  │
+└─────────────┘      └──────────────────┘      └─────────────┘
+                              │
+                    ┌─────────┼─────────┐
+                    ▼         ▼         ▼
+              PostgreSQL    Redis    Clerk Auth
+```
+
+**Control Plane** — Manages agents, secrets, invocations, and usage tracking.
+
+**E2B Sandboxes** — Isolated execution environments where your agents run.
+
+## Deployment Flow
+
+When you run `cast deploy`:
+
+<Steps>
+<Step title="Upload Code">
+Your agent code is uploaded to Castari (or cloned from git).
+</Step>
+<Step title="Create Sandbox">
+An isolated E2B sandbox is created for your agent.
+</Step>
+<Step title="Install Dependencies">
+`npm install` runs inside the sandbox.
+</Step>
+<Step title="Inject Secrets">
+Any secrets you've set become environment variables.
+</Step>
+<Step title="Ready">
+Agent status becomes `active`. Ready to invoke.
+</Step>
+</Steps>
+
+## Invocation Flow
+
+When you run `cast invoke`:
+
+<Steps>
+<Step title="Request Received">
+Your prompt is sent to the Castari API.
+</Step>
+<Step title="Sandbox Activated">
+A fresh sandbox is spun up for this request.
+</Step>
+<Step title="Agent Runs">
+Your agent code executes with the prompt as input.
+</Step>
+<Step title="Response Collected">
+Output is captured and returned to you.
+</Step>
+<Step title="Cleanup">
+Sandbox is destroyed. No state persists.
+</Step>
+</Steps>
+
+## Per-Request Scaling
+
+Every invocation gets a **fresh sandbox**. This means:
+
+- **No state leaks** — Each request is isolated
+- **True security** — No cross-request data exposure
+- **Automatic scaling** — Parallel invocations run in parallel sandboxes
+- **No cold starts** — Sandboxes are pre-warmed
+
+## Agent Entry Point Contract
+
+Your agent communicates via stdin/stdout:
+
+```
+Input:  prompt → stdin
+Output: response → stdout
+```
+
+Example:
+
+```typescript
+// Read prompt from stdin
+let prompt = "";
+for await (const chunk of process.stdin) {
+  prompt += chunk;
+}
+
+// Process and respond
+const response = await runAgent(prompt);
+
+// Write to stdout
+console.log(response);
+```
+
+## Security Model
+
+| Layer | Protection |
+|-------|------------|
+| Sandbox | Isolated E2B container |
+| Network | Egress allowed, no ingress |
+| Secrets | Encrypted at rest, injected at runtime |
+| Code | Your code, your sandbox, not shared |
+
+## Resource Limits
+
+| Resource | Limit |
+|----------|-------|
+| Memory | 2 GB |
+| CPU | 2 cores |
+| Timeout | 120 seconds |
+| Disk | 10 GB |
+
+<Note>
+Contact us if you need higher limits for production workloads.
+</Note>
+
+## See Also
+
+<CardGroup cols={2}>
+  <Card title="Agents" icon="robot" href="/concepts/agents">
+    Agent structure and lifecycle
+  </Card>
+  <Card title="Sandboxes" icon="box" href="/concepts/sandboxes">
+    E2B sandbox details
+  </Card>
+  <Card title="Secrets" icon="key" href="/concepts/secrets">
+    Environment variable management
+  </Card>
+  <Card title="Invocations" icon="play" href="/concepts/invocations">
+    Request/response model
+  </Card>
+</CardGroup>

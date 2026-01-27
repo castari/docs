@@ -1,0 +1,185 @@
+---
+title: "cast agents"
+description: "List and manage agents"
+---
+
+# cast agents
+
+Commands for listing and managing your agents.
+
+## cast agents list
+
+List all your agents.
+
+### Usage
+
+```bash
+cast agents list
+```
+
+### Output
+
+```
+NAME           SLUG           STATUS    CREATED
+My Agent       my-agent       active    2024-01-15
+Research Bot   research-bot   active    2024-01-14
+Test Agent     test-agent     stopped   2024-01-10
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--json` | Output as JSON |
+
+```bash
+cast agents list --json
+```
+
+```json
+[
+  {
+    "id": "agt_abc123",
+    "name": "My Agent",
+    "slug": "my-agent",
+    "status": "active",
+    "created_at": "2024-01-15T10:30:00Z"
+  }
+]
+```
+
+---
+
+## cast agents get
+
+Get details for a specific agent.
+
+### Usage
+
+```bash
+cast agents get <slug>
+```
+
+### Example
+
+```bash
+cast agents get my-agent
+```
+
+### Output
+
+```
+Name:        My Agent
+Slug:        my-agent
+Status:      active
+Created:     2024-01-15 10:30:00
+Updated:     2024-01-15 14:22:00
+Sandbox ID:  sbx_xyz789
+Git Repo:    —
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--json` | Output as JSON |
+
+---
+
+## cast agents create
+
+Create a new agent without deploying.
+
+### Usage
+
+```bash
+cast agents create <slug> [options]
+```
+
+### Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `-n, --name <name>` | Display name | Slug |
+| `-g, --git <url>` | Git repository URL | — |
+
+### Example
+
+```bash
+cast agents create my-agent --name "My Agent"
+```
+
+<Note>
+Most users should use `cast init` + `cast deploy` instead of `cast agents create`. This command is for advanced use cases.
+</Note>
+
+---
+
+## cast agents delete
+
+Delete an agent.
+
+### Usage
+
+```bash
+cast agents delete <slug>
+```
+
+### Example
+
+```bash
+cast agents delete my-agent
+```
+
+### Output
+
+```
+? Are you sure you want to delete 'my-agent'? (y/N) y
+✓ Agent 'my-agent' deleted
+```
+
+<Warning>
+This permanently deletes the agent, its secrets, and all invocation history. This cannot be undone.
+</Warning>
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--force` | Skip confirmation prompt |
+
+```bash
+cast agents delete my-agent --force
+```
+
+---
+
+## cast agents stop
+
+Stop a running agent.
+
+### Usage
+
+```bash
+cast agents stop <slug>
+```
+
+### Example
+
+```bash
+cast agents stop my-agent
+```
+
+### Output
+
+```
+✓ Agent 'my-agent' stopped
+```
+
+This destroys the sandbox but preserves the agent record. You can redeploy with `cast deploy`.
+
+## See Also
+
+- [cast deploy](/cli/deploy) — Deploy an agent
+- [cast invoke](/cli/invoke) — Invoke an agent
+- [cast secrets](/cli/secrets) — Manage secrets
