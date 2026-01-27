@@ -1,43 +1,83 @@
-# Mintlify Starter Kit
+# Castari Documentation
 
-Use the starter kit to get your docs deployed and ready to customize.
+Documentation for [Castari](https://castari.com) — deploy Claude agents in seconds.
 
-Click the green **Use this template** button at the top of this repo to copy the Mintlify starter kit. The starter kit contains examples with
+**[View the docs](https://docs.castari.com)**
 
-- Guide pages
-- Navigation
-- Customizations
-- API reference pages
-- Use of popular components
+## Quick Start
 
-**[Follow the full quickstart guide](https://starter.mintlify.com/quickstart)**
+**Prerequisites:** Node.js 18+ and npm installed.
+
+```bash
+# Install the CLI
+npm install -g @castari/cli
+
+# Login
+cast login
+
+# Create an agent from a template
+cast init my-agent
+
+# Deploy it
+cd my-agent
+cast deploy
+
+# Run it
+cast invoke my-agent "What files are in the current directory?"
+```
+
+## Documentation
+
+### Getting Started
+- [Introduction](https://docs.castari.com)
+- [Quick Start](https://docs.castari.com/quickstart)
+- [Installation](https://docs.castari.com/installation)
+- [First Agent](https://docs.castari.com/first-agent)
+
+### CLI Reference
+- [Overview](https://docs.castari.com/cli/overview)
+- [login](https://docs.castari.com/cli/login)
+- [init](https://docs.castari.com/cli/init)
+- [deploy](https://docs.castari.com/cli/deploy)
+- [invoke](https://docs.castari.com/cli/invoke)
+- [agents](https://docs.castari.com/cli/agents)
+- [secrets](https://docs.castari.com/cli/secrets)
+- [logs](https://docs.castari.com/cli/logs)
+
+### SDK Reference
+- [Overview](https://docs.castari.com/sdk/overview)
+- [Client](https://docs.castari.com/sdk/client)
+- [Agents](https://docs.castari.com/sdk/agents)
+- [Secrets](https://docs.castari.com/sdk/secrets)
+- [Types](https://docs.castari.com/sdk/types)
+
+### Concepts
+- [How It Works](https://docs.castari.com/concepts/how-it-works)
+- [Agents](https://docs.castari.com/concepts/agents)
+- [Sandboxes](https://docs.castari.com/concepts/sandboxes)
+- [Secrets](https://docs.castari.com/concepts/secrets)
+- [Invocations](https://docs.castari.com/concepts/invocations)
+
+### Guides
+- [Templates](https://docs.castari.com/guides/templates)
+- [Custom Agents](https://docs.castari.com/guides/custom-agents)
+- [MCP Integration](https://docs.castari.com/guides/mcp)
+- [Debugging](https://docs.castari.com/guides/debugging)
+- [Best Practices](https://docs.castari.com/guides/best-practices)
 
 ## Development
 
-Install the [Mintlify CLI](https://www.npmjs.com/package/mint) to preview your documentation changes locally. To install, use the following command:
+To run the docs locally:
 
-```
+```bash
 npm i -g mint
-```
-
-Run the following command at the root of your documentation, where your `docs.json` is located:
-
-```
 mint dev
 ```
 
-View your local preview at `http://localhost:3000`.
+View at `http://localhost:3000`.
 
-## Publishing changes
+## Links
 
-Install our GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app) to propagate changes from your repo to your deployment. Changes are deployed to production automatically after pushing to the default branch.
-
-## Need help?
-
-### Troubleshooting
-
-- If your dev environment isn't running: Run `mint update` to ensure you have the most recent version of the CLI.
-- If a page loads as a 404: Make sure you are running in a folder with a valid `docs.json`.
-
-### Resources
-- [Mintlify documentation](https://mintlify.com/docs)
+- [Dashboard](https://app.castari.com)
+- [CLI Repository](https://github.com/castari/cli)
+- [Twitter](https://x.com/castari_dev)
