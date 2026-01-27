@@ -32,12 +32,7 @@
         "groups": [
           {
             "group": "Getting Started",
-            "pages": [
-              "index",
-              "quickstart",
-              "installation",
-              "first-agent"
-            ]
+            "pages": ["index", "quickstart", "installation", "first-agent"]
           },
           {
             "group": "CLI Reference",
@@ -89,9 +84,7 @@
         "groups": [
           {
             "group": "API Documentation",
-            "pages": [
-              "api-reference/introduction"
-            ]
+            "pages": ["api-reference/introduction"]
           }
         ]
       }
@@ -100,7 +93,7 @@
       "anchors": [
         {
           "anchor": "GitHub",
-          "href": "https://github.com/castari",
+          "href": "https://github.com/castari/cli",
           "icon": "github"
         }
       ]
@@ -108,8 +101,8 @@
   },
   "footer": {
     "socials": {
-      "github": "https://github.com/castari",
-      "x": "https://x.com/castaridev",
+      "github": "https://github.com/castari/cli",
+      "x": "https://x.com/castari_dev",
       "linkedin": "https://linkedin.com/company/castari"
     }
   },
