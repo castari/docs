@@ -1,11 +1,11 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "Castari",
-  "theme": "mint",
+  "theme": "linden",
   "colors": {
-    "primary": "#6366F1",
-    "light": "#818CF8",
-    "dark": "#4F46E5"
+    "primary": "#394656",
+    "light": "#606C7C",
+    "dark": "#222121"
   },
   "favicon": "/favicon.svg",
   "logo": {
