@@ -7,6 +7,16 @@
     "light": "#606C7C",
     "dark": "#222121"
   },
+  "font": {
+    "headings": {
+      "family": "Instrument Serif",
+      "url": "https://fonts.googleapis.com/css2?family=Instrument+Serif&display=swap"
+    },
+    "body": {
+      "family": "Inter",
+      "url": "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    }
+  },
   "favicon": "/favicon.svg",
   "logo": {
     "light": "/logo/light.svg",
