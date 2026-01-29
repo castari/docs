@@ -53,8 +53,7 @@
               "cli/deploy",
               "cli/invoke",
               "cli/agents",
-              "cli/secrets",
-              "cli/logs"
+              "cli/secrets"
             ]
           },
           {

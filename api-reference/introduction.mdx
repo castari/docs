@@ -15,15 +15,15 @@ https://api.castari.com
 
 ## Authentication
 
-All API requests require authentication via one of these methods:
+All API requests require authentication via the `Authorization` header with a Bearer token.
 
 ### API Key (Recommended)
 
-Include your API key in the `X-API-Key` header:
+Include your API key as a Bearer token:
 
 ```bash
 curl https://api.castari.com/api/v1/agents \
-  -H "X-API-Key: cast_xxxxxxxx_xxxxxxxxxx"
+  -H "Authorization: Bearer cast_xxxxxxxx_xxxxxxxxxx"
 ```
 
 API keys look like: `cast_xxxxxxxx_xxxxxxxxxx`
@@ -32,7 +32,7 @@ Generate one in the [Castari Dashboard](https://app.castari.com).
 
 ### OAuth Token
 
-Include a Bearer token in the `Authorization` header:
+You can also use a Clerk JWT token:
 
 ```bash
 curl https://api.castari.com/api/v1/agents \
@@ -149,17 +149,17 @@ See the [SDK Reference](/sdk/overview) for details.
 ```bash
 # 1. Create an agent
 curl -X POST https://api.castari.com/api/v1/agents \
-  -H "X-API-Key: cast_xxx" \
+  -H "Authorization: Bearer cast_xxx" \
   -H "Content-Type: application/json" \
-  -d '{"slug": "my-agent", "name": "My Agent"}'
+  -d '{"name": "My Agent", "slug": "my-agent"}'
 
 # 2. Deploy the agent
 curl -X POST https://api.castari.com/api/v1/agents/my-agent/deploy \
-  -H "X-API-Key: cast_xxx"
+  -H "Authorization: Bearer cast_xxx"
 
 # 3. Invoke the agent
 curl -X POST https://api.castari.com/api/v1/agents/my-agent/invoke \
-  -H "X-API-Key: cast_xxx" \
+  -H "Authorization: Bearer cast_xxx" \
   -H "Content-Type: application/json" \
   -d '{"prompt": "Hello, world!"}'
 ```

@@ -42,7 +42,6 @@ cast invoke my-agent "What files are in the current directory?"
 - [invoke](https://docs.castari.com/cli/invoke)
 - [agents](https://docs.castari.com/cli/agents)
 - [secrets](https://docs.castari.com/cli/secrets)
-- [logs](https://docs.castari.com/cli/logs)
 
 ### SDK Reference
 - [Overview](https://docs.castari.com/sdk/overview)
