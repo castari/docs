@@ -75,7 +75,8 @@ Every invocation returns:
 ```typescript
 {
   invocation_id: "inv_abc123",
-  response: "The current directory contains...",
+  session_id: "sess_xyz789",
+  response_content: "The current directory contains...",
   input_tokens: 124,
   output_tokens: 1110,
   total_cost_usd: 0.02,
@@ -87,12 +88,13 @@ Every invocation returns:
 | Field | Description |
 |-------|-------------|
 | `invocation_id` | Unique identifier |
-| `response` | Agent's output |
+| `session_id` | Session identifier |
+| `response_content` | Agent's output |
 | `input_tokens` | Tokens in the prompt |
 | `output_tokens` | Tokens in the response |
 | `total_cost_usd` | Total cost in USD |
 | `duration_ms` | Execution time |
-| `status` | `completed`, `failed`, or `timeout` |
+| `status` | `completed` or `failed` |
 
 ## Statuses
 
@@ -104,50 +106,7 @@ Every invocation returns:
 
 ## Timeouts
 
-Default timeout is **120 seconds** (2 minutes).
-
-Override with:
-
-```bash
-# CLI
-cast invoke my-agent "Complex task" --timeout 300000
-
-# SDK
-await client.agents.invoke('my-agent', 'Complex task', { timeout: 300000 });
-```
-
-Maximum timeout: 600 seconds (10 minutes).
-
-## Streaming
-
-For real-time output:
-
-```bash
-cast invoke my-agent "Write a long response" --stream
-```
-
-Response streams token by token as generated.
-
-## Viewing Invocation History
-
-```bash
-cast logs my-agent
-```
-
-```
-INVOCATION           STATUS      TOKENS    COST      DURATION
-inv_abc123           completed   1,234     $0.02     2.3s
-inv_def456           completed   856       $0.01     1.8s
-inv_ghi789           failed      124       $0.00     0.5s
-```
-
-### Invocation Details
-
-```bash
-cast logs my-agent --invocation inv_abc123
-```
-
-Shows full input, output, and error details.
+Default timeout is **120 seconds** (2 minutes). Maximum timeout: 600 seconds (10 minutes).
 
 ## Cost Tracking
 
@@ -170,9 +129,9 @@ Multiple invocations can run **in parallel**:
 ```typescript
 // These run concurrently in separate sandboxes
 const results = await Promise.all([
-  client.agents.invoke('my-agent', 'Task 1'),
-  client.agents.invoke('my-agent', 'Task 2'),
-  client.agents.invoke('my-agent', 'Task 3'),
+  client.agents.invoke('my-agent', { prompt: 'Task 1' }),
+  client.agents.invoke('my-agent', { prompt: 'Task 2' }),
+  client.agents.invoke('my-agent', { prompt: 'Task 3' }),
 ]);
 ```
 
@@ -185,14 +144,13 @@ Each gets its own isolated sandbox.
 ```bash
 cast invoke my-agent "Bad request"
 # Error: Agent execution failed
-# Run 'cast logs my-agent --invocation inv_xyz' for details
 ```
 
 ### In SDK
 
 ```typescript
 try {
-  const result = await client.agents.invoke('my-agent', prompt);
+  const result = await client.agents.invoke('my-agent', { prompt });
 } catch (error) {
   if (error instanceof CastariError) {
     console.log(error.status);  // 500
@@ -207,7 +165,7 @@ try {
   <Card title="cast invoke" icon="terminal" href="/cli/invoke">
     CLI reference
   </Card>
-  <Card title="Agents API" icon="code" href="/sdk/agents#invokeslug-prompt">
+  <Card title="Agents API" icon="code" href="/sdk/agents#invokeslug-options">
     SDK reference
   </Card>
   <Card title="Debugging" icon="bug" href="/guides/debugging">

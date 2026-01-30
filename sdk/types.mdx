@@ -14,11 +14,20 @@ Represents a Castari agent.
 ```typescript
 interface Agent {
   id: string;
+  user_id: string;
   name: string;
   slug: string;
+  description?: string | null;
+  source_type: AgentSourceType;
+  git_repo_url?: string | null;
+  git_branch: string;
+  source_hash?: string | null;
+  default_model: string;
+  max_turns: number;
+  timeout_seconds: number;
   status: AgentStatus;
-  git_repo_url?: string;
-  sandbox_id?: string;
+  status_message?: string | null;
+  sandbox_id?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -26,10 +35,11 @@ interface Agent {
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `id` | `string` | Unique identifier (e.g., `agt_abc123`) |
+| `id` | `string` | Unique identifier |
 | `name` | `string` | Display name |
 | `slug` | `string` | URL-safe identifier |
 | `status` | `AgentStatus` | Current status |
+| `source_type` | `AgentSourceType` | `'git'` or `'local'` |
 | `git_repo_url` | `string?` | Source repository URL |
 | `sandbox_id` | `string?` | Active sandbox ID (when deployed) |
 | `created_at` | `string` | ISO 8601 timestamp |
@@ -43,60 +53,120 @@ Possible agent statuses.
 
 ```typescript
 type AgentStatus =
+  | 'draft'
   | 'pending'
   | 'deploying'
   | 'active'
   | 'stopped'
-  | 'error';
+  | 'failed';
 ```
 
 | Status | Description |
 |--------|-------------|
-| `pending` | Created but never deployed |
+| `draft` | Created but not configured |
+| `pending` | Configured but never deployed |
 | `deploying` | Deployment in progress |
 | `active` | Running and ready for invocations |
 | `stopped` | Manually stopped |
-| `error` | Deployment or runtime error |
+| `failed` | Deployment or runtime error |
 
 ---
 
-## InvocationResult
+## AgentSourceType
+
+Source type for agent code.
+
+```typescript
+type AgentSourceType = 'git' | 'local';
+```
+
+---
+
+## InvocationResponse
 
 Response from invoking an agent.
 
 ```typescript
-interface InvocationResult {
+interface InvocationResponse {
   invocation_id: string;
-  response: string;
+  session_id: string;
+  sandbox_id?: string | null;
+  response_content: string;
   input_tokens: number;
   output_tokens: number;
-  total_cost_usd: number;
+  total_cost_usd: number | string;
   duration_ms: number;
-  status: InvocationStatus;
+  status: 'completed' | 'failed';
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `invocation_id` | `string` | Unique identifier (e.g., `inv_abc123`) |
-| `response` | `string` | Agent's response text |
+| `session_id` | `string` | Session ID for the invocation |
+| `response_content` | `string` | Agent's response text |
 | `input_tokens` | `number` | Tokens in the prompt |
 | `output_tokens` | `number` | Tokens in the response |
-| `total_cost_usd` | `number` | Total cost in USD |
+| `total_cost_usd` | `number \| string` | Total cost in USD |
 | `duration_ms` | `number` | Execution time in milliseconds |
-| `status` | `InvocationStatus` | Completion status |
+| `status` | `string` | `'completed'` or `'failed'` |
 
 ---
 
-## InvocationStatus
+## InvokeOptions
 
-Possible invocation statuses.
+Options for invoking an agent.
 
 ```typescript
-type InvocationStatus =
-  | 'completed'
-  | 'failed'
-  | 'timeout';
+interface InvokeOptions {
+  prompt: string;
+  sessionId?: string;
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `prompt` | `string` | Yes | The prompt to send |
+| `sessionId` | `string` | No | Session ID for conversation continuity |
+
+---
+
+## CreateAgentOptions
+
+Options for creating an agent.
+
+```typescript
+interface CreateAgentOptions {
+  name: string;
+  slug?: string;
+  description?: string;
+  sourceType?: AgentSourceType;
+  gitRepoUrl?: string;
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | `string` | Yes | Display name for the agent |
+| `slug` | `string` | No | URL-safe identifier (auto-generated if omitted) |
+| `description` | `string` | No | Agent description |
+| `sourceType` | `AgentSourceType` | No | `'git'` (default) or `'local'` |
+| `gitRepoUrl` | `string` | No | Git repository URL |
+
+---
+
+## UploadResponse
+
+Response from uploading code.
+
+```typescript
+interface UploadResponse {
+  agent_id: string;
+  source_hash: string;
+  status: AgentStatus;
+  sandbox_id?: string | null;
+  message: string;
+}
 ```
 
 ---
@@ -108,16 +178,12 @@ Represents a secret (metadata only — values are never returned).
 ```typescript
 interface Secret {
   key: string;
-  created_at: string;
-  updated_at: string;
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `key` | `string` | Secret name (e.g., `OPENAI_API_KEY`) |
-| `created_at` | `string` | ISO 8601 timestamp |
-| `updated_at` | `string` | ISO 8601 timestamp |
 
 ---
 
@@ -133,19 +199,11 @@ interface CastariClientOptions {
 }
 ```
 
----
-
-## CreateAgentRequest
-
-Request body for creating an agent.
-
-```typescript
-interface CreateAgentRequest {
-  slug: string;
-  name?: string;
-  git_repo_url?: string;
-}
-```
+| Field | Type | Description |
+|-------|------|-------------|
+| `apiKey` | `string` | API key (starts with `cast_`) |
+| `token` | `string` | OAuth token |
+| `baseUrl` | `string` | API base URL (default: `https://api.castari.com`) |
 
 ---
 
@@ -194,10 +252,12 @@ import {
   CastariError,
   Agent,
   AgentStatus,
-  InvocationResult,
-  InvocationStatus,
+  AgentSourceType,
+  InvocationResponse,
+  InvokeOptions,
+  CreateAgentOptions,
+  UploadResponse,
   Secret,
-  CreateAgentRequest,
 } from '@castari/sdk';
 ```
 

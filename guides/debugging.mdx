@@ -28,44 +28,6 @@ console.error(`[DEBUG] Prompt: ${prompt}`);
 console.error(`[DEBUG] Executing tool: ${toolName}`);
 ```
 
-## Viewing Logs
-
-### Recent Invocations
-
-```bash
-cast logs my-agent
-```
-
-```
-INVOCATION           STATUS      TOKENS    COST      DURATION
-inv_abc123           completed   1,234     $0.02     2.3s
-inv_def456           completed   856       $0.01     1.8s
-inv_ghi789           failed      124       $0.00     0.5s
-```
-
-### Invocation Details
-
-```bash
-cast logs my-agent --invocation inv_ghi789
-```
-
-```
-Invocation: inv_ghi789
-Status:     failed
-
-Error:
-  Tool execution failed: read_file
-  ENOENT: no such file or directory, open '/nonexistent/file.txt'
-```
-
-### Stream Logs
-
-```bash
-cast logs my-agent --follow
-```
-
-Watch logs in real-time as invocations happen.
-
 ## Common Errors
 
 ### "Agent not found"
@@ -117,7 +79,7 @@ cast deploy               # Redeploy
 
 **Fix:**
 - Optimize slow operations
-- Increase timeout: `cast invoke my-agent "prompt" --timeout 300000`
+- Break complex tasks into smaller steps
 - Check for infinite loops
 
 ### "Tool execution failed"
@@ -242,20 +204,19 @@ cast deploy
 
 If you're stuck:
 
-1. **Check logs:** `cast logs my-agent --invocation <id>`
-2. **Test locally:** `echo "prompt" | npm run dev`
-3. **Check status:** `cast agents get my-agent`
-4. **Redeploy:** `cast deploy`
+1. **Test locally:** `echo "prompt" | npm run dev`
+2. **Check status:** `cast agents get my-agent`
+3. **Redeploy:** `cast deploy`
 
 Still stuck? Open an issue on [GitHub](https://github.com/castari/cli).
 
 ## See Also
 
 <CardGroup cols={2}>
-  <Card title="cast logs" icon="terminal" href="/cli/logs">
-    CLI reference
-  </Card>
   <Card title="Sandboxes" icon="box" href="/concepts/sandboxes">
     Execution environment
+  </Card>
+  <Card title="cast invoke" icon="terminal" href="/cli/invoke">
+    CLI reference
   </Card>
 </CardGroup>

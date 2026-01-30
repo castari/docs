@@ -5,60 +5,45 @@ description: "Deploy an agent to Castari"
 
 # cast deploy
 
-Deploy an agent to Castari from a local directory.
+Deploy an agent to Castari.
 
 ## Usage
 
 ```bash
-cast deploy [path] [options]
+cast deploy [slug]
 ```
 
 ## Arguments
 
 | Argument | Description | Required |
 |----------|-------------|----------|
-| `path` | Path to agent directory | No (defaults to `.`) |
-
-## Options
-
-| Option | Description | Default |
-|--------|-------------|---------|
-| `-s, --slug <slug>` | Agent slug | Directory name |
-| `-n, --name <name>` | Agent display name | Slug |
-| `--no-install` | Skip npm install | `false` |
+| `slug` | Agent slug | No (detected from `castari.json` if in project directory) |
 
 ## Examples
 
-### Deploy from current directory
+### Deploy from a Castari project directory
+
+If you're inside a directory with a `castari.json` file, just run:
 
 ```bash
-cd my-agent
 cast deploy
 ```
 
-### Deploy from a specific path
+The CLI reads the agent slug from your configuration.
+
+### Deploy a specific agent
 
 ```bash
-cast deploy ./path/to/agent
+cast deploy my-agent
 ```
 
-### Deploy with custom slug
-
-```bash
-cast deploy --slug my-custom-slug
-```
-
-### Skip npm install
-
-```bash
-cast deploy --no-install
-```
+Deploys the agent with slug `my-agent`, pulling code from its configured git repository.
 
 ## What Happens During Deploy
 
 <Steps>
-  <Step title="Upload">
-    Your agent code is uploaded to Castari.
+  <Step title="Fetch Code">
+    Code is pulled from the agent's configured git repository.
   </Step>
   <Step title="Create Sandbox">
     An isolated E2B sandbox is created for your agent.
@@ -74,21 +59,9 @@ cast deploy --no-install
   </Step>
 </Steps>
 
-## Agent Structure Requirements
+## Agent Configuration
 
-Your agent directory must contain:
-
-```
-my-agent/
-├── castari.json      # Required: agent configuration
-├── package.json      # Required: dependencies
-├── src/
-│   └── index.ts      # Required: entry point
-├── CLAUDE.md         # Optional: agent instructions
-└── README.md         # Optional: documentation
-```
-
-### castari.json
+Your agent needs a `castari.json` file:
 
 ```json
 {
@@ -115,7 +88,8 @@ Redeploying does not preserve sandbox state. All files and data in the sandbox a
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| `castari.json not found` | Missing config file | Add `castari.json` to your agent directory |
+| `Agent not found` | Invalid slug | Check `cast agents list` for correct slug |
+| `castari.json not found` | Not in a project directory | Specify the slug explicitly or `cd` to your project |
 | `npm install failed` | Dependency error | Check `package.json`, run `npm install` locally first |
 | `Authentication required` | Not logged in | Run `cast login` |
 

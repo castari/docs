@@ -67,21 +67,23 @@ console.log(agent.status); // 'active'
 
 ---
 
-### create(data)
+### create(options)
 
 Create a new agent.
 
 ```typescript
-const agent = await client.agents.create(data);
+const agent = await client.agents.create(options);
 ```
 
 **Parameters:**
 
-| Name | Type | Description |
-|------|------|-------------|
-| `data.slug` | `string` | Unique identifier for the agent |
-| `data.name` | `string` | Display name (optional, defaults to slug) |
-| `data.gitRepoUrl` | `string` | Git repository URL (optional) |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `options.name` | `string` | Yes | Display name for the agent |
+| `options.slug` | `string` | No | Unique identifier (auto-generated from name if not provided) |
+| `options.description` | `string` | No | Agent description |
+| `options.sourceType` | `'git' \| 'local'` | No | Source type (default: `'git'`) |
+| `options.gitRepoUrl` | `string` | No | Git repository URL (required when sourceType is `'git'`) |
 
 **Returns:** `Promise<Agent>`
 
@@ -89,8 +91,9 @@ const agent = await client.agents.create(data);
 
 ```typescript
 const agent = await client.agents.create({
-  slug: 'my-agent',
   name: 'My Agent',
+  slug: 'my-agent',  // optional
+  gitRepoUrl: 'https://github.com/user/my-agent',
 });
 ```
 
@@ -178,35 +181,50 @@ console.log(agent.status); // 'stopped'
 
 ---
 
-### invoke(slug, prompt)
+### invoke(slug, options)
 
 Invoke an agent with a prompt.
 
 ```typescript
-const result = await client.agents.invoke(slug, prompt, options?);
+const result = await client.agents.invoke(slug, options);
 ```
 
 **Parameters:**
 
-| Name | Type | Description |
-|------|------|-------------|
-| `slug` | `string` | The agent's slug |
-| `prompt` | `string` | The prompt to send |
-| `options.timeout` | `number` | Timeout in ms (default: 120000) |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `slug` | `string` | Yes | The agent's slug |
+| `options.prompt` | `string` | Yes | The prompt to send |
+| `options.sessionId` | `string` | No | Session ID for conversation continuity |
 
-**Returns:** `Promise<InvocationResult>`
+**Returns:** `Promise<InvocationResponse>`
 
 **Example:**
 
 ```typescript
-const result = await client.agents.invoke(
-  'my-agent',
-  'What files are in the current directory?'
-);
+const result = await client.agents.invoke('my-agent', {
+  prompt: 'What files are in the current directory?'
+});
 
-console.log(result.response);
+console.log(result.response_content);
 console.log(`Cost: $${result.total_cost_usd}`);
 console.log(`Duration: ${result.duration_ms}ms`);
+```
+
+**With session (multi-turn conversation):**
+
+```typescript
+// First turn
+const result1 = await client.agents.invoke('my-agent', {
+  prompt: 'Create a file called hello.txt',
+  sessionId: 'my-session',
+});
+
+// Second turn (same session, sandbox preserved)
+const result2 = await client.agents.invoke('my-agent', {
+  prompt: 'What did you just create?',
+  sessionId: 'my-session',
+});
 ```
 
 **Response:**
@@ -214,7 +232,8 @@ console.log(`Duration: ${result.duration_ms}ms`);
 ```typescript
 {
   invocation_id: 'inv_abc123',
-  response: 'The current directory contains...',
+  session_id: 'my-session',
+  response_content: 'The current directory contains...',
   input_tokens: 124,
   output_tokens: 1110,
   total_cost_usd: 0.02,
@@ -222,6 +241,113 @@ console.log(`Duration: ${result.duration_ms}ms`);
   status: 'completed'
 }
 ```
+
+---
+
+### uploadCode(slug, file, filename, options?)
+
+Upload code directly to an agent and deploy.
+
+```typescript
+const result = await client.agents.uploadCode(slug, file, filename, options?);
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `slug` | `string` | Yes | The agent's slug |
+| `file` | `Blob` | Yes | The code archive file |
+| `filename` | `string` | Yes | Filename (e.g., `'code.tar.gz'`) |
+| `options.autoDeploy` | `boolean` | No | Auto-deploy after upload (default: `true`) |
+
+**Returns:** `Promise<UploadResponse>`
+
+**Example:**
+
+```typescript
+const file = new Blob([tarGzBuffer], { type: 'application/gzip' });
+const result = await client.agents.uploadCode('my-agent', file, 'code.tar.gz');
+console.log(result.status); // 'active'
+```
+
+---
+
+### listSecrets(slug)
+
+List secret keys for an agent (values are never returned).
+
+```typescript
+const secrets = await client.agents.listSecrets(slug);
+```
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `slug` | `string` | The agent's slug |
+
+**Returns:** `Promise<Secret[]>`
+
+**Example:**
+
+```typescript
+const secrets = await client.agents.listSecrets('my-agent');
+// [{ key: 'OPENAI_API_KEY' }, { key: 'DATABASE_URL' }]
+```
+
+---
+
+### setSecret(slug, key, value)
+
+Set a secret for an agent.
+
+```typescript
+await client.agents.setSecret(slug, key, value);
+```
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `slug` | `string` | The agent's slug |
+| `key` | `string` | The secret key |
+| `value` | `string` | The secret value |
+
+**Returns:** `Promise<void>`
+
+**Example:**
+
+```typescript
+await client.agents.setSecret('my-agent', 'OPENAI_API_KEY', 'sk-xxx');
+```
+
+---
+
+### deleteSecret(slug, key)
+
+Delete a secret from an agent.
+
+```typescript
+await client.agents.deleteSecret(slug, key);
+```
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `slug` | `string` | The agent's slug |
+| `key` | `string` | The secret key to delete |
+
+**Returns:** `Promise<void>`
+
+**Example:**
+
+```typescript
+await client.agents.deleteSecret('my-agent', 'OLD_API_KEY');
+```
+
+---
 
 ## Full Example
 
@@ -246,12 +372,11 @@ async function main() {
   }
 
   // Invoke
-  const result = await client.agents.invoke(
-    'my-agent',
-    'Write a haiku about coding'
-  );
+  const result = await client.agents.invoke('my-agent', {
+    prompt: 'Write a haiku about coding',
+  });
 
-  console.log(result.response);
+  console.log(result.response_content);
 }
 
 main();

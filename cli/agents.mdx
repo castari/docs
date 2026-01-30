@@ -26,28 +26,6 @@ Research Bot   research-bot   active    2024-01-14
 Test Agent     test-agent     stopped   2024-01-10
 ```
 
-### Options
-
-| Option | Description |
-|--------|-------------|
-| `--json` | Output as JSON |
-
-```bash
-cast agents list --json
-```
-
-```json
-[
-  {
-    "id": "agt_abc123",
-    "name": "My Agent",
-    "slug": "my-agent",
-    "status": "active",
-    "created_at": "2024-01-15T10:30:00Z"
-  }
-]
-```
-
 ---
 
 ## cast agents get
@@ -75,14 +53,8 @@ Status:      active
 Created:     2024-01-15 10:30:00
 Updated:     2024-01-15 14:22:00
 Sandbox ID:  sbx_xyz789
-Git Repo:    —
+Git Repo:    https://github.com/user/my-agent
 ```
-
-### Options
-
-| Option | Description |
-|--------|-------------|
-| `--json` | Output as JSON |
 
 ---
 
@@ -93,20 +65,32 @@ Create a new agent without deploying.
 ### Usage
 
 ```bash
-cast agents create <slug> [options]
+cast agents create <name> <git-url> [options]
 ```
+
+### Arguments
+
+| Argument | Description | Required |
+|----------|-------------|----------|
+| `name` | Display name for the agent | Yes |
+| `git-url` | Git repository URL | Yes |
 
 ### Options
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `-n, --name <name>` | Display name | Slug |
-| `-g, --git <url>` | Git repository URL | — |
+| Option | Description |
+|--------|-------------|
+| `--slug <slug>` | Custom slug (auto-generated from name if not provided) |
 
 ### Example
 
 ```bash
-cast agents create my-agent --name "My Agent"
+cast agents create "My Agent" https://github.com/user/my-agent
+```
+
+With a custom slug:
+
+```bash
+cast agents create "My Agent" https://github.com/user/my-agent --slug my-custom-slug
 ```
 
 <Note>
@@ -146,37 +130,13 @@ This permanently deletes the agent, its secrets, and all invocation history. Thi
 
 | Option | Description |
 |--------|-------------|
-| `--force` | Skip confirmation prompt |
+| `-f, --force` | Skip confirmation prompt |
 
 ```bash
 cast agents delete my-agent --force
 ```
 
 ---
-
-## cast agents stop
-
-Stop a running agent.
-
-### Usage
-
-```bash
-cast agents stop <slug>
-```
-
-### Example
-
-```bash
-cast agents stop my-agent
-```
-
-### Output
-
-```
-✓ Agent 'my-agent' stopped
-```
-
-This destroys the sandbox but preserves the agent record. You can redeploy with `cast deploy`.
 
 ## See Also
 

@@ -30,8 +30,8 @@ console.log(agents);
 await client.agents.deploy('my-agent');
 
 // Invoke an agent
-const result = await client.agents.invoke('my-agent', 'Hello!');
-console.log(result.response);
+const result = await client.agents.invoke('my-agent', { prompt: 'Hello!' });
+console.log(result.response_content);
 ```
 
 ## When to Use the SDK
@@ -75,7 +75,7 @@ import {
   CastariClient,
   Agent,
   AgentStatus,
-  InvocationResult,
+  InvocationResponse,
 } from '@castari/sdk';
 ```
 
