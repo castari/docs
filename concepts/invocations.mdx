@@ -75,7 +75,8 @@ Every invocation returns:
 ```typescript
 {
   invocation_id: "inv_abc123",
-  response: "The current directory contains...",
+  session_id: "sess_xyz789",
+  response_content: "The current directory contains...",
   input_tokens: 124,
   output_tokens: 1110,
   total_cost_usd: 0.02,
@@ -87,12 +88,13 @@ Every invocation returns:
 | Field | Description |
 |-------|-------------|
 | `invocation_id` | Unique identifier |
-| `response` | Agent's output |
+| `session_id` | Session identifier |
+| `response_content` | Agent's output |
 | `input_tokens` | Tokens in the prompt |
 | `output_tokens` | Tokens in the response |
 | `total_cost_usd` | Total cost in USD |
 | `duration_ms` | Execution time |
-| `status` | `completed`, `failed`, or `timeout` |
+| `status` | `completed` or `failed` |
 
 ## Statuses
 
