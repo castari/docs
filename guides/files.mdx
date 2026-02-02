@@ -1,0 +1,342 @@
+---
+title: "Working with Files"
+description: "Upload and attach files to agents"
+---
+
+# Working with Files
+
+This guide covers how to provide files to your agents using Castari's managed file storage.
+
+## Quick Start
+
+```bash
+# Upload a file
+cast files upload data.csv
+
+# Attach to agent
+cast agents files add my-agent file_abc123
+
+# Deploy agent
+cast deploy my-agent
+```
+
+Your agent can now read the file at `/files/agent/data.csv`.
+
+## Uploading Files
+
+### CLI Upload
+
+```bash
+# Basic upload
+cast files upload myfile.json
+
+# With metadata
+cast files upload data.csv --description "Customer data" --tags sales,2024
+```
+
+### Dashboard Upload
+
+1. Go to **Files** in the sidebar
+2. Click **Upload File**
+3. Drag & drop or select a file
+4. Add optional description and tags
+5. Click **Upload**
+
+### Large Files
+
+Files larger than 10MB automatically use presigned uploads:
+
+```bash
+# Large file upload (handled automatically)
+cast files upload large-dataset.parquet
+```
+
+The CLI shows progress for large uploads:
+
+```
+Uploading large-dataset.parquet (150 MB)...
+████████████████████████████░░░░░░░░░░░░ 70%
+```
+
+## Attaching Files to Agents
+
+### Basic Attachment
+
+```bash
+cast agents files add my-agent file_abc123
+```
+
+The file appears at `/files/agent/<filename>` in the sandbox.
+
+### Custom Mount Path
+
+```bash
+cast agents files add my-agent file_abc123 --mount-path /data/custom.csv
+```
+
+### Writable Files
+
+By default, files are read-only. For writable files:
+
+```bash
+cast agents files add my-agent file_abc123 --writable
+```
+
+<Warning>
+Writable files can be modified by the agent. Use with caution.
+</Warning>
+
+## Using Files in Agent Code
+
+### Reading Files
+
+```typescript
+import { readFileSync, readFile } from 'fs';
+import { readFile as asyncReadFile } from 'fs/promises';
+
+// Synchronous read
+const data = readFileSync('/files/agent/data.csv', 'utf-8');
+
+// Async read
+const asyncData = await asyncReadFile('/files/agent/data.csv', 'utf-8');
+```
+
+### Parsing Common Formats
+
+**CSV:**
+```typescript
+import { parse } from 'csv-parse/sync';
+
+const csvContent = readFileSync('/files/agent/data.csv', 'utf-8');
+const records = parse(csvContent, { columns: true });
+```
+
+**JSON:**
+```typescript
+const config = JSON.parse(
+  readFileSync('/files/agent/config.json', 'utf-8')
+);
+```
+
+### Checking File Existence
+
+```typescript
+import { existsSync } from 'fs';
+
+if (existsSync('/files/agent/optional.txt')) {
+  // File is available
+}
+```
+
+## Managing Files
+
+### List Your Files
+
+```bash
+# List all files
+cast files list
+
+# Filter by tags
+cast files list --tags dataset
+
+# Search by name
+cast files list --search training
+```
+
+### View File Details
+
+```bash
+cast files get file_abc123
+```
+
+### Delete Files
+
+```bash
+cast files delete file_abc123
+```
+
+<Note>
+Deleting a file automatically detaches it from all agents.
+</Note>
+
+### Download Files
+
+```bash
+cast files download file_abc123 --output ./local-copy.csv
+```
+
+## Agent File Management
+
+### List Attached Files
+
+```bash
+cast agents files list my-agent
+```
+
+```
+File ID        Filename      Mount Path                Size      Mode
+file_abc123    data.csv      /files/agent/data.csv     2.4 MB    ro
+file_def456    config.json   /files/agent/config.json  1.2 KB    ro
+```
+
+### Detach Files
+
+```bash
+cast agents files remove my-agent file_abc123
+```
+
+## Dashboard File Management
+
+### Files Page
+
+The **Files** page shows:
+- All your uploaded files
+- Storage usage bar
+- Quick search and filtering
+
+### Agent Files Section
+
+Each agent's detail page has an **Attached Files** section:
+- View attached files and mount paths
+- Attach new files with the file picker
+- Detach files you no longer need
+
+## Storage Usage
+
+### Check Your Quota
+
+```bash
+cast files usage
+```
+
+```
+Total Files    12
+Total Size     45.2 MB
+Quota Used     45.2%
+Quota Limit    100 MB
+```
+
+### Storage Limits
+
+| Plan | Limit |
+|------|-------|
+| Free | 100 MB |
+| Pro | 10 GB |
+| Enterprise | Custom |
+
+## Best Practices
+
+### File Organization
+
+1. **Use meaningful names** — `customer-data-2024.csv` not `data.csv`
+2. **Add descriptions** — Document what each file is for
+3. **Tag consistently** — Use tags like `dataset`, `config`, `reference`
+4. **Clean up unused files** — Delete files you no longer need
+
+### Performance
+
+1. **Keep files reasonably sized** — Under 100MB for best performance
+2. **Use appropriate formats** — CSV/JSON for structured data
+3. **Consider streaming** — For very large files, process in chunks
+
+### Security
+
+1. **Don't upload secrets** — Use [Secrets](/concepts/secrets) for credentials
+2. **Review before attaching** — Only attach files agents actually need
+3. **Verify file integrity** — Check SHA256 hash for critical files
+
+## Common Patterns
+
+### Configuration Files
+
+```bash
+# Upload config
+cast files upload agent-config.json --tags config
+
+# Attach to agent
+cast agents files add my-agent file_abc123
+```
+
+```typescript
+// In agent code
+const config = JSON.parse(
+  readFileSync('/files/agent/agent-config.json', 'utf-8')
+);
+```
+
+### Data Processing
+
+```bash
+# Upload dataset
+cast files upload training-data.csv --tags dataset,ml
+
+# Attach
+cast agents files add ml-agent file_abc123
+```
+
+```typescript
+// In agent code
+import { parse } from 'csv-parse/sync';
+
+const csv = readFileSync('/files/agent/training-data.csv', 'utf-8');
+const data = parse(csv, { columns: true });
+// Process data...
+```
+
+### Reference Documents
+
+```bash
+# Upload reference material
+cast files upload product-docs.txt --tags reference,docs
+
+# Attach
+cast agents files add support-agent file_abc123
+```
+
+```typescript
+// In agent code
+const docs = readFileSync('/files/agent/product-docs.txt', 'utf-8');
+// Use in system prompt or for RAG
+```
+
+## Troubleshooting
+
+### File Not Found
+
+If your agent can't find a file:
+
+1. Verify the file is attached:
+   ```bash
+   cast agents files list my-agent
+   ```
+
+2. Check the mount path in the output
+
+3. Ensure you're using the correct path in code
+
+### Upload Failures
+
+For upload issues:
+
+1. Check your storage quota:
+   ```bash
+   cast files usage
+   ```
+
+2. Verify the file exists locally
+
+3. For large files, ensure stable network connection
+
+### Permission Errors
+
+If you get permission errors:
+
+1. Files are read-only by default
+2. Use `--writable` when attaching if writes are needed
+3. Check file mode in `cast agents files list`
+
+## See Also
+
+- [Managed Files Concept](/concepts/files) — How file storage works
+- [cast files](/cli/files) — CLI reference
+- [Storage Buckets](/dashboard/storage) — BYO storage for large datasets

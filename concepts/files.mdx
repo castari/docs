@@ -1,0 +1,193 @@
+---
+title: "Managed Files"
+description: "Simple file storage for agent data"
+---
+
+# Managed Files
+
+Castari provides zero-configuration file storage for your agents. Upload files, attach them to agents, and they automatically appear in the sandbox.
+
+## Why Managed Files?
+
+Your agents often need access to:
+
+- Data files (CSV, JSON, etc.)
+- Configuration files
+- Documents for processing
+- Reference materials
+
+Managed files let you provide these **simply** without:
+
+- Setting up cloud storage buckets
+- Managing credentials
+- Configuring mount paths manually
+
+## How It Works
+
+```mermaid
+graph LR
+    A[Upload File] --> B[Attach to Agent]
+    B --> C[Auto-mount in Sandbox]
+    C --> D[Agent reads /files/agent/]
+```
+
+1. **Upload** — Files go to Castari's managed storage
+2. **Attach** — Link files to specific agents
+3. **Mount** — Files automatically appear at `/files/agent/` in the sandbox
+
+## File Scopes
+
+Files can be scoped for different uses:
+
+| Scope | Description | Mount Path |
+|-------|-------------|------------|
+| `user` | Your personal files | Available to attach |
+| `agent` | Attached to a specific agent | `/files/agent/` |
+| `session` | Per-invocation outputs | `/files/session/` |
+
+## Uploading Files
+
+### Via CLI
+
+```bash
+cast files upload data.csv --description "Training data"
+```
+
+### Via Dashboard
+
+1. Navigate to **Files** in the sidebar
+2. Click **Upload File**
+3. Select file and add optional description/tags
+
+### Via SDK
+
+```typescript
+const result = await client.files.upload(fileBlob, 'data.csv', {
+  description: 'Training data',
+  tags: ['dataset', 'csv'],
+});
+console.log(result.file_id); // file_abc123
+```
+
+## Attaching Files to Agents
+
+Once uploaded, attach files to agents:
+
+### Via CLI
+
+```bash
+cast agents files add my-agent file_abc123
+```
+
+### Via Dashboard
+
+1. Go to **Agents** → your agent
+2. Find the **Attached Files** section
+3. Click **Attach File** and select from your files
+
+### Via SDK
+
+```typescript
+await client.files.attachToAgent('my-agent', {
+  fileId: 'file_abc123',
+  readOnly: true,
+});
+```
+
+## Using Files in Agents
+
+Attached files are available at `/files/agent/`:
+
+```typescript
+import { readFileSync } from 'fs';
+
+// Read attached file
+const data = readFileSync('/files/agent/data.csv', 'utf-8');
+
+// Parse and process
+const rows = data.split('\n').map(line => line.split(','));
+```
+
+<Tip>
+Files are read-only by default. Use `--writable` flag or set `readOnly: false` to allow writes.
+</Tip>
+
+## Storage Limits
+
+| Plan | Storage Limit |
+|------|---------------|
+| Free | 100 MB |
+| Pro | 10 GB |
+| Enterprise | Custom |
+
+Check your usage:
+
+```bash
+cast files usage
+```
+
+```
+Total Files    12
+Total Size     45.2 MB
+Quota Used     45.2%
+Quota Limit    100 MB
+
+████████████████████░░░░░░░░░░░░░░░░░░░░ 45.2%
+```
+
+## Managed vs. BYO Storage
+
+Castari supports both managed files and bring-your-own storage buckets:
+
+| Feature | Managed Files | BYO Buckets |
+|---------|---------------|-------------|
+| Setup | Zero config | Configure credentials |
+| Storage | Castari hosted | Your S3/GCS/R2 |
+| Cost | Included in plan | Your cloud costs |
+| Use case | Simple files | Large datasets |
+
+<Note>
+Use managed files for simplicity. Use [Storage Buckets](/dashboard/storage) for large datasets or when you need files in your own cloud.
+</Note>
+
+## File Metadata
+
+Each file tracks:
+
+- **Filename** — Original name
+- **Size** — File size in bytes
+- **Content Type** — MIME type
+- **SHA256 Hash** — Integrity verification
+- **Description** — Optional description
+- **Tags** — Optional tags for organization
+
+## Best Practices
+
+### Organization
+
+- **Use descriptions** — Document what each file is for
+- **Tag consistently** — Use tags like `dataset`, `config`, `reference`
+- **Clean up** — Delete files you no longer need
+
+### Security
+
+- **Don't upload secrets** — Use [Secrets](/concepts/secrets) for credentials
+- **Verify hashes** — Check SHA256 for critical files
+- **Review attachments** — Only attach files agents actually need
+
+### Performance
+
+- **Keep files small** — For large datasets, use BYO storage
+- **Use appropriate formats** — CSV/JSON for structured data
+- **Consider caching** — Files are cached in the sandbox
+
+## See Also
+
+<CardGroup cols={2}>
+  <Card title="cast files" icon="terminal" href="/cli/files">
+    CLI reference
+  </Card>
+  <Card title="Storage Buckets" icon="database" href="/dashboard/storage">
+    BYO storage setup
+  </Card>
+</CardGroup>
