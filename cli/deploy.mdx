@@ -17,7 +17,7 @@ cast deploy [slug]
 
 | Argument | Description | Required |
 |----------|-------------|----------|
-| `slug` | Agent slug | No (detected from `castari.json` if in project directory) |
+| `slug` | Agent slug | No (read from `castari.json` if in project directory) |
 
 ## Examples
 
@@ -29,7 +29,7 @@ If you're inside a directory with a `castari.json` file, just run:
 cast deploy
 ```
 
-The CLI reads the agent slug from your configuration.
+The CLI reads the `slug` field from `castari.json`. If no `slug` field is present, it derives the slug from the `name` field.
 
 ### Deploy a specific agent
 
@@ -66,6 +66,7 @@ Your agent needs a `castari.json` file:
 ```json
 {
   "name": "my-agent",
+  "slug": "my-agent",
   "version": "0.1.0",
   "entrypoint": "src/index.ts",
   "runtime": "node"

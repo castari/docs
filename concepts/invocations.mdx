@@ -21,7 +21,7 @@ You create an **invocation** — a record of:
 - The response you received
 - Tokens used and cost
 - Execution time
-- Status (completed, failed, timeout)
+- Status (completed, failed)
 
 ## Invocation Flow
 
@@ -102,11 +102,10 @@ Every invocation returns:
 |--------|-------------|
 | `completed` | Agent finished successfully |
 | `failed` | Agent encountered an error |
-| `timeout` | Execution exceeded time limit |
 
 ## Timeouts
 
-Default timeout is **120 seconds** (2 minutes). Maximum timeout: 600 seconds (10 minutes).
+Default timeout is **120 seconds** (2 minutes). Maximum timeout: 600 seconds (10 minutes). Timeouts result in a `failed` status with an appropriate error message.
 
 ## Cost Tracking
 
