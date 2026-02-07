@@ -19,16 +19,28 @@ npm install -g @castari/cli
 |---------|-------------|
 | [`cast login`](/cli/login) | Authenticate with Castari |
 | [`cast logout`](/cli/login#logout) | Clear stored credentials |
-| [`cast whoami`](/cli/login#whoami) | Show current user |
+| [`cast whoami`](/cli/whoami) | Show current user |
 | [`cast init`](/cli/init) | Create a new agent from a template |
 | [`cast deploy`](/cli/deploy) | Deploy an agent |
+| [`cast stop`](/cli/stop) | Stop a running agent |
 | [`cast invoke`](/cli/invoke) | Invoke a deployed agent |
 | [`cast agents list`](/cli/agents) | List all agents |
 | [`cast agents get`](/cli/agents#cast-agents-get) | Get agent details |
+| [`cast agents update`](/cli/agents) | Update agent configuration |
 | [`cast agents delete`](/cli/agents#cast-agents-delete) | Delete an agent |
 | [`cast secrets list`](/cli/secrets) | List secrets for an agent |
 | [`cast secrets set`](/cli/secrets#cast-secrets-set) | Set a secret |
 | [`cast secrets delete`](/cli/secrets#cast-secrets-delete) | Delete a secret |
+| [`cast apikey list`](/cli/apikey) | List API keys |
+| [`cast apikey create`](/cli/apikey#cast-apikey-create) | Create a new API key |
+| [`cast apikey revoke`](/cli/apikey#cast-apikey-revoke) | Revoke an API key |
+| [`cast usage`](/cli/usage) | Show usage statistics |
+| [`cast buckets`](/cli/buckets) | Manage storage buckets |
+| [`cast mounts`](/cli/mounts) | Mount buckets to agents |
+| [`cast files`](/cli/files) | Manage files in storage |
+| [`cast sessions list`](/cli/sessions) | List agent sessions |
+| [`cast sessions delete`](/cli/sessions#cast-sessions-delete) | Delete a session |
+| [`cast invocations list`](/cli/agents) | List invocation history |
 
 ## Global Options
 
@@ -38,7 +50,6 @@ All commands support these options:
 |--------|-------------|
 | `--help` | Show help for a command |
 | `--version` | Show CLI version |
-| `--debug` | Enable debug output |
 
 ## Configuration
 

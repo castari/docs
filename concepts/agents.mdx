@@ -76,14 +76,14 @@ You are a research assistant that finds and synthesizes information.
 ## Agent Lifecycle
 
 ```
-pending → deploying → active → stopped
-                ↓
-              error
+draft → deploying → active → stopped
+               ↓
+             error
 ```
 
 | Status | Description |
 |--------|-------------|
-| `pending` | Created but never deployed |
+| `draft` | Created but not yet deployed |
 | `deploying` | Deployment in progress |
 | `active` | Running and accepting invocations |
 | `stopped` | Manually stopped (can be redeployed) |

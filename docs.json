@@ -54,7 +54,14 @@
               "cli/invoke",
               "cli/agents",
               "cli/secrets",
-              "cli/files"
+              "cli/files",
+              "cli/apikey",
+              "cli/whoami",
+              "cli/stop",
+              "cli/usage",
+              "cli/buckets",
+              "cli/mounts",
+              "cli/sessions"
             ]
           },
           {
@@ -64,7 +71,12 @@
               "sdk/client",
               "sdk/agents",
               "sdk/secrets",
-              "sdk/types"
+              "sdk/types",
+              "sdk/auth",
+              "sdk/usage",
+              "sdk/storage",
+              "sdk/mounts",
+              "sdk/files"
             ]
           },
           {

@@ -54,21 +54,19 @@ Possible agent statuses.
 ```typescript
 type AgentStatus =
   | 'draft'
-  | 'pending'
   | 'deploying'
   | 'active'
   | 'stopped'
-  | 'failed';
+  | 'error';
 ```
 
 | Status | Description |
 |--------|-------------|
-| `draft` | Created but not configured |
-| `pending` | Configured but never deployed |
+| `draft` | Created but not yet deployed |
 | `deploying` | Deployment in progress |
 | `active` | Running and ready for invocations |
 | `stopped` | Manually stopped |
-| `failed` | Deployment or runtime error |
+| `error` | Deployment or runtime error |
 
 ---
 
@@ -213,18 +211,16 @@ Error thrown by SDK operations.
 
 ```typescript
 class CastariError extends Error {
-  status: number;
+  statusCode: number;
   code?: string;
-  detail?: string;
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `message` | `string` | Human-readable error message |
-| `status` | `number` | HTTP status code |
+| `statusCode` | `number` | HTTP status code |
 | `code` | `string?` | Error code (e.g., `agent_not_found`) |
-| `detail` | `string?` | Additional details |
 
 **Example:**
 
@@ -233,11 +229,27 @@ try {
   await client.agents.get('nonexistent');
 } catch (error) {
   if (error instanceof CastariError) {
-    console.log(error.status);  // 404
-    console.log(error.message); // "Agent not found"
+    console.log(error.statusCode); // 404
+    console.log(error.message);    // "Agent not found"
   }
 }
 ```
+
+---
+
+## Storage v2 Types
+
+The SDK includes types for managed file storage (Storage v2):
+
+- `ManagedFile` — File metadata (id, filename, size, scope, tags, status)
+- `FileUploadResponse` — Upload result
+- `ManagedFileList` — Paginated file list with metadata
+- `StorageUsage` — Quota information (total files, bytes, limits)
+- `PresignedUpload` — Presigned URL for large file uploads
+- `AgentFile` — File attached to an agent
+- `AgentFileList` — List of agent-attached files
+
+See the full type definitions in [types.ts](https://github.com/castari/cli/blob/main/packages/sdk/src/types.ts).
 
 ---
 
@@ -256,8 +268,18 @@ import {
   InvocationResponse,
   InvokeOptions,
   CreateAgentOptions,
+  UpdateAgentOptions,
   UploadResponse,
   Secret,
+  User,
+  ApiKeyInfo,
+  ApiKeyCreateResponse,
+  UsageSummary,
+  DailyUsage,
+  Bucket,
+  Mount,
+  ManagedFile,
+  StorageUsage,
 } from '@castari/sdk';
 ```
 
@@ -266,3 +288,8 @@ import {
 - [CastariClient](/sdk/client) — Client setup
 - [Agents API](/sdk/agents) — Agent methods
 - [Secrets API](/sdk/secrets) — Secrets methods
+- [Auth API](/sdk/auth) — Authentication methods
+- [Usage API](/sdk/usage) — Usage statistics
+- [Storage API](/sdk/storage) — Cloud bucket storage
+- [Mounts API](/sdk/mounts) — Agent mounts
+- [Files API](/sdk/files) — Managed file storage

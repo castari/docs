@@ -1,0 +1,150 @@
+---
+title: "Auth API"
+description: "Authentication and API key management"
+---
+
+# Auth API
+
+The Auth API provides methods for user authentication and API key management.
+
+Access via `client.auth`:
+
+```typescript
+const client = new CastariClient({ apiKey: '...' });
+const auth = client.auth;
+```
+
+## Methods
+
+### me()
+
+Get the current authenticated user's information.
+
+```typescript
+const user = await client.auth.me();
+```
+
+**Returns:** `Promise<User>`
+
+**Example:**
+
+```typescript
+const user = await client.auth.me();
+console.log(user.email);      // 'user@example.com'
+console.log(user.created_at); // '2025-01-15T10:00:00Z'
+```
+
+**Response type:**
+
+```typescript
+interface User {
+  id: string;
+  email: string;
+  api_key_prefix?: string;
+  created_at: string;
+}
+```
+
+---
+
+### listApiKeys()
+
+List all API keys for the authenticated user.
+
+```typescript
+const keys = await client.auth.listApiKeys();
+```
+
+**Returns:** `Promise<ApiKeyInfo[]>`
+
+**Example:**
+
+```typescript
+const keys = await client.auth.listApiKeys();
+for (const key of keys) {
+  console.log(`${key.name} (${key.prefix}...) - Created: ${key.created_at}`);
+}
+```
+
+**Response type:**
+
+```typescript
+interface ApiKeyInfo {
+  id: string;
+  name: string;
+  prefix: string;
+  created_at: string;
+  last_used_at?: string;
+}
+```
+
+---
+
+### createApiKey(name?)
+
+Create a new named API key.
+
+```typescript
+const result = await client.auth.createApiKey(name?);
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `name` | `string` | No | Descriptive name for the key (default: `'Default'`) |
+
+**Returns:** `Promise<ApiKeyCreateResponse>`
+
+**Example:**
+
+```typescript
+const result = await client.auth.createApiKey('CI/CD Pipeline');
+console.log(result.key); // 'cast_xxxxxxxx_xxxxxxxxxx' — save this!
+console.log(result.api_key.id); // key ID for future reference
+```
+
+<Warning>
+The full API key (`result.key`) is only returned once at creation. Store it securely.
+</Warning>
+
+**Response type:**
+
+```typescript
+interface ApiKeyCreateResponse {
+  api_key: ApiKeyInfo;
+  key: string; // Full API key — only shown once
+}
+```
+
+---
+
+### revokeApiKey(keyId?)
+
+Revoke an API key by its ID.
+
+```typescript
+await client.auth.revokeApiKey(keyId?);
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `keyId` | `string` | No | The ID of the key to revoke |
+
+**Returns:** `Promise<void>`
+
+**Example:**
+
+```typescript
+await client.auth.revokeApiKey('ak_abc123');
+```
+
+---
+
+## See Also
+
+- [cast apikey](/cli/apikey) — CLI equivalent
+- [CastariClient](/sdk/client) — Client setup
+- [Types](/sdk/types) — TypeScript interfaces

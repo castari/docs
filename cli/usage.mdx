@@ -1,0 +1,44 @@
+---
+title: "cast usage"
+description: "View usage statistics"
+---
+
+# cast usage
+
+Show usage statistics for your Castari account.
+
+## Usage
+
+```bash
+cast usage [--days <days>] [--daily]
+```
+
+## Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `-d, --days <days>` | Number of days to show | `30` |
+| `--daily` | Show daily breakdown instead of summary | Off |
+
+## Examples
+
+### Summary view (default)
+
+```bash
+cast usage
+```
+
+Displays total invocations, input/output tokens, and total cost for the period.
+
+### Daily breakdown
+
+```bash
+cast usage --daily --days 7
+```
+
+Shows a table with per-day invocations, tokens, and cost.
+
+## See Also
+
+- [Usage API (SDK)](/sdk/usage) — Query usage programmatically
+- [CLI Overview](/cli/overview) — All CLI commands

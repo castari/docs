@@ -1,0 +1,89 @@
+---
+title: "cast apikey"
+description: "Manage API keys for authentication"
+---
+
+# cast apikey
+
+Manage API keys for programmatic access to the Castari API. Castari supports multiple named API keys per user.
+
+## Subcommands
+
+| Command | Description |
+|---------|-------------|
+| `cast apikey list` | List all API keys |
+| `cast apikey create` | Create a new API key |
+| `cast apikey revoke <key-id>` | Revoke an API key |
+
+---
+
+## cast apikey list
+
+List all API keys for the authenticated user.
+
+### Usage
+
+```bash
+cast apikey list
+```
+
+### Output
+
+Displays a table with key ID, name, prefix, creation date, and last used date.
+
+---
+
+## cast apikey create
+
+Create a new named API key.
+
+### Usage
+
+```bash
+cast apikey create [--name <name>]
+```
+
+### Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--name <name>` | A descriptive name for the key | `Default` |
+
+### Example
+
+```bash
+cast apikey create --name "CI/CD Pipeline"
+```
+
+<Warning>
+The full API key is only displayed once at creation. Store it securely — you will not be able to see it again.
+</Warning>
+
+---
+
+## cast apikey revoke
+
+Revoke an existing API key.
+
+### Usage
+
+```bash
+cast apikey revoke <key-id>
+```
+
+### Arguments
+
+| Argument | Description | Required |
+|----------|-------------|----------|
+| `key-id` | The ID of the API key to revoke | Yes |
+
+### Example
+
+```bash
+cast apikey revoke ak_abc123
+```
+
+## See Also
+
+- [Auth API (SDK)](/sdk/auth) — Manage API keys programmatically
+- [CLI Overview](/cli/overview) — All CLI commands

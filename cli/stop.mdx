@@ -1,0 +1,41 @@
+---
+title: "cast stop"
+description: "Stop a running agent"
+---
+
+# cast stop
+
+Stop a running agent and destroy its sandbox.
+
+## Usage
+
+```bash
+cast stop <slug>
+```
+
+## Arguments
+
+| Argument | Description | Required |
+|----------|-------------|----------|
+| `slug` | The agent's unique slug | Yes |
+
+## Example
+
+```bash
+cast stop my-agent
+```
+
+<Warning>
+Stopping an agent destroys its sandbox. All files and state inside the sandbox will be lost. The agent can be redeployed with `cast deploy`.
+</Warning>
+
+## What Happens
+
+1. The agent's sandbox is destroyed via `DELETE /agents/{slug}/sandbox`
+2. The agent status changes to `stopped`
+3. The agent can no longer receive invocations until redeployed
+
+## See Also
+
+- [cast deploy](/cli/deploy) — Deploy or redeploy an agent
+- [Agents API](/sdk/agents) — `agents.stop()` SDK method

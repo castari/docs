@@ -1,0 +1,225 @@
+---
+title: "Files API"
+description: "Managed file storage for agents"
+---
+
+# Files API
+
+The Files API provides managed file storage (Storage v2). Upload files to Castari's managed storage and attach them to agents.
+
+Access via `client.files`:
+
+```typescript
+const client = new CastariClient({ apiKey: '...' });
+const files = client.files;
+```
+
+## Methods
+
+### upload(file, filename, options?)
+
+Upload a file to managed storage.
+
+```typescript
+const result = await client.files.upload(file, filename, options?);
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `file` | `Blob` | Yes | The file data |
+| `filename` | `string` | Yes | File name |
+| `options.description` | `string` | No | File description |
+| `options.tags` | `string[]` | No | Tags for organization |
+
+**Returns:** `Promise<FileUploadResponse>`
+
+**Example:**
+
+```typescript
+const file = new Blob(['Hello, world!'], { type: 'text/plain' });
+const result = await client.files.upload(file, 'hello.txt', {
+  description: 'Greeting file',
+  tags: ['example'],
+});
+console.log(result.file_id);
+```
+
+---
+
+### list(options?)
+
+List files in managed storage.
+
+```typescript
+const result = await client.files.list(options?);
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `options.limit` | `number` | No | Max results (default: 50) |
+| `options.offset` | `number` | No | Pagination offset |
+| `options.scope` | `'user' \| 'agent' \| 'session'` | No | Filter by scope |
+| `options.tags` | `string[]` | No | Filter by tags |
+| `options.search` | `string` | No | Search by filename |
+
+**Returns:** `Promise<ManagedFileList>`
+
+---
+
+### get(fileId)
+
+Get file metadata.
+
+```typescript
+const file = await client.files.get(fileId);
+```
+
+**Returns:** `Promise<ManagedFile>`
+
+---
+
+### update(fileId, options)
+
+Update file metadata.
+
+```typescript
+const file = await client.files.update(fileId, options);
+```
+
+**Returns:** `Promise<ManagedFile>`
+
+---
+
+### delete(fileId)
+
+Delete a file from managed storage.
+
+```typescript
+await client.files.delete(fileId);
+```
+
+**Returns:** `Promise<void>`
+
+---
+
+### download(fileId)
+
+Download a file.
+
+```typescript
+const response = await client.files.download(fileId);
+```
+
+**Returns:** `Promise<Response>`
+
+---
+
+### getUsage()
+
+Get storage usage statistics.
+
+```typescript
+const usage = await client.files.getUsage();
+```
+
+**Returns:** `Promise<StorageUsage>`
+
+**Example:**
+
+```typescript
+const usage = await client.files.getUsage();
+console.log(`${usage.total_files} files, ${usage.total_mb} MB used (${usage.usage_percent}%)`);
+```
+
+**Response type:**
+
+```typescript
+interface StorageUsage {
+  total_files: number;
+  total_bytes: number;
+  total_mb: number;
+  limit_mb: number;
+  usage_percent: number;
+}
+```
+
+---
+
+### getUploadUrl(filename, sizeBytes, options?)
+
+Get a presigned upload URL for large files.
+
+```typescript
+const presigned = await client.files.getUploadUrl(filename, sizeBytes, options?);
+```
+
+**Returns:** `Promise<PresignedUpload>`
+
+---
+
+### confirmUpload(fileId, sha256Hash)
+
+Confirm a presigned upload completed successfully.
+
+```typescript
+const file = await client.files.confirmUpload(fileId, sha256Hash);
+```
+
+**Returns:** `Promise<ManagedFile>`
+
+---
+
+### attachToAgent(agentSlug, options)
+
+Attach a file to an agent.
+
+```typescript
+const agentFile = await client.files.attachToAgent(agentSlug, options);
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `agentSlug` | `string` | Yes | The agent's slug |
+| `options.fileId` | `string` | Yes | File ID to attach |
+| `options.mountPath` | `string` | No | Path inside the sandbox |
+| `options.readOnly` | `boolean` | No | Mount as read-only |
+
+**Returns:** `Promise<AgentFile>`
+
+---
+
+### listAgentFiles(agentSlug)
+
+List files attached to an agent.
+
+```typescript
+const result = await client.files.listAgentFiles(agentSlug);
+```
+
+**Returns:** `Promise<AgentFileList>`
+
+---
+
+### detachFromAgent(agentSlug, fileId)
+
+Detach a file from an agent.
+
+```typescript
+await client.files.detachFromAgent(agentSlug, fileId);
+```
+
+**Returns:** `Promise<void>`
+
+---
+
+## See Also
+
+- [cast files](/cli/files) — CLI equivalent
+- [Storage API](/sdk/storage) — Cloud bucket storage
+- [Types](/sdk/types) — TypeScript interfaces

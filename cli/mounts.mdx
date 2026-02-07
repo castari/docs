@@ -1,0 +1,101 @@
+---
+title: "cast mounts"
+description: "Mount storage buckets to agents"
+---
+
+# cast mounts
+
+Mount cloud storage buckets to agent sandboxes, giving agents read or write access to external files.
+
+## Subcommands
+
+| Command | Description |
+|---------|-------------|
+| `cast mounts list <agent-slug>` | List mounts for an agent |
+| `cast mounts add <agent-slug>` | Add a mount to an agent |
+| `cast mounts update <agent-slug> <mount-id>` | Update a mount |
+| `cast mounts remove <agent-slug> <mount-id>` | Remove a mount |
+
+---
+
+## cast mounts list
+
+List all mounts for an agent.
+
+### Usage
+
+```bash
+cast mounts list <agent-slug>
+```
+
+---
+
+## cast mounts add
+
+Add a storage bucket mount to an agent.
+
+### Usage
+
+```bash
+cast mounts add <agent-slug> [options]
+```
+
+### Options
+
+| Option | Description | Required |
+|--------|-------------|----------|
+| `--bucket <slug>` | Bucket slug to mount | Yes |
+| `--path <path>` | Mount path inside the sandbox | Yes |
+| `--prefix <prefix>` | Source prefix in the bucket | No |
+| `--read-only` | Mount as read-only | No |
+
+### Example
+
+```bash
+cast mounts add my-agent \
+  --bucket production-data \
+  --path /data \
+  --read-only
+```
+
+---
+
+## cast mounts update
+
+Update an existing mount.
+
+### Usage
+
+```bash
+cast mounts update <agent-slug> <mount-id> [options]
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--path <path>` | New mount path |
+| `--prefix <prefix>` | New source prefix |
+| `--enable` | Enable the mount |
+| `--disable` | Disable the mount |
+
+---
+
+## cast mounts remove
+
+Remove a mount from an agent.
+
+### Usage
+
+```bash
+cast mounts remove <agent-slug> <mount-id> [-f, --force]
+```
+
+<Note>
+After modifying mounts, redeploy the agent for changes to take effect.
+</Note>
+
+## See Also
+
+- [cast buckets](/cli/buckets) — Manage storage buckets
+- [Mounts API (SDK)](/sdk/mounts) — Manage mounts programmatically

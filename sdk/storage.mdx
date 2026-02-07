@@ -1,0 +1,198 @@
+---
+title: "Storage API"
+description: "Manage cloud storage buckets"
+---
+
+# Storage API
+
+The Storage API lets you manage cloud storage buckets (S3, GCS, R2) that can be mounted to agent sandboxes.
+
+Access via `client.storage`:
+
+```typescript
+const client = new CastariClient({ apiKey: '...' });
+const storage = client.storage;
+```
+
+## Methods
+
+### getBuckets()
+
+List all storage buckets.
+
+```typescript
+const buckets = await client.storage.getBuckets();
+```
+
+**Returns:** `Promise<Bucket[]>`
+
+---
+
+### createBucket(options)
+
+Create a new storage bucket configuration.
+
+```typescript
+const bucket = await client.storage.createBucket(options);
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `options.name` | `string` | Yes | Display name |
+| `options.slug` | `string` | Yes | URL-safe identifier |
+| `options.provider` | `'s3' \| 'gcs' \| 'r2'` | Yes | Cloud storage provider |
+| `options.bucketName` | `string` | Yes | Actual bucket name in the provider |
+| `options.region` | `string` | No | AWS region (for S3) |
+| `options.endpointUrl` | `string` | No | Custom endpoint URL (required for R2) |
+
+**Returns:** `Promise<Bucket>`
+
+**Example:**
+
+```typescript
+const bucket = await client.storage.createBucket({
+  name: 'Production Data',
+  slug: 'production-data',
+  provider: 's3',
+  bucketName: 'my-data-bucket',
+  region: 'us-east-1',
+});
+```
+
+---
+
+### getBucket(slug)
+
+Get a specific bucket by slug.
+
+```typescript
+const bucket = await client.storage.getBucket(slug);
+```
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `slug` | `string` | The bucket's slug |
+
+**Returns:** `Promise<Bucket>`
+
+---
+
+### updateBucket(slug, options)
+
+Update a bucket configuration.
+
+```typescript
+const bucket = await client.storage.updateBucket(slug, options);
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `slug` | `string` | Yes | The bucket's slug |
+| `options.name` | `string` | No | New display name |
+| `options.bucketName` | `string` | No | New bucket name |
+| `options.region` | `string` | No | New region |
+| `options.endpointUrl` | `string` | No | New endpoint URL |
+
+**Returns:** `Promise<Bucket>`
+
+---
+
+### deleteBucket(slug)
+
+Delete a bucket configuration.
+
+```typescript
+await client.storage.deleteBucket(slug);
+```
+
+**Returns:** `Promise<void>`
+
+---
+
+### setCredentials(slug, credentials)
+
+Set credentials for a bucket.
+
+```typescript
+await client.storage.setCredentials(slug, credentials);
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `slug` | `string` | Yes | The bucket's slug |
+| `credentials.accessKeyId` | `string` | No | AWS/R2 access key ID |
+| `credentials.secretAccessKey` | `string` | No | AWS/R2 secret access key |
+| `credentials.serviceAccountJson` | `string` | No | GCS service account JSON |
+
+**Returns:** `Promise<void>`
+
+---
+
+### testConnection(slug)
+
+Test the connection to a bucket.
+
+```typescript
+const result = await client.storage.testConnection(slug);
+```
+
+**Returns:** `Promise<TestConnectionResult>`
+
+---
+
+### listFiles(slug, prefix?)
+
+List files in a bucket.
+
+```typescript
+const files = await client.storage.listFiles(slug, prefix?);
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `slug` | `string` | Yes | The bucket's slug |
+| `prefix` | `string` | No | Filter files by prefix |
+
+**Returns:** `Promise<FileInfo[]>`
+
+---
+
+### getDownloadUrl(slug, path, options?)
+
+Get a presigned download URL for a file.
+
+```typescript
+const presigned = await client.storage.getDownloadUrl(slug, path, options?);
+```
+
+**Returns:** `Promise<PresignedUrl>`
+
+---
+
+### getUploadUrl(slug, path, options?)
+
+Get a presigned upload URL for a file.
+
+```typescript
+const presigned = await client.storage.getUploadUrl(slug, path, options?);
+```
+
+**Returns:** `Promise<PresignedUrl>`
+
+---
+
+## See Also
+
+- [cast buckets](/cli/buckets) — CLI equivalent
+- [Mounts API](/sdk/mounts) — Mount buckets to agents
+- [Types](/sdk/types) — TypeScript interfaces

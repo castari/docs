@@ -1,0 +1,128 @@
+---
+title: "Mounts API"
+description: "Mount storage buckets to agent sandboxes"
+---
+
+# Mounts API
+
+The Mounts API lets you mount cloud storage buckets to agent sandboxes, giving agents read or write access to external files.
+
+Access via `client.mounts`:
+
+```typescript
+const client = new CastariClient({ apiKey: '...' });
+const mounts = client.mounts;
+```
+
+## Methods
+
+### getMounts(agentSlug)
+
+List all mounts for an agent.
+
+```typescript
+const mounts = await client.mounts.getMounts(agentSlug);
+```
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `agentSlug` | `string` | The agent's slug |
+
+**Returns:** `Promise<Mount[]>`
+
+**Example:**
+
+```typescript
+const mounts = await client.mounts.getMounts('my-agent');
+for (const mount of mounts) {
+  console.log(`${mount.mount_path} → ${mount.bucket.name} (${mount.enabled ? 'enabled' : 'disabled'})`);
+}
+```
+
+---
+
+### addMount(agentSlug, options)
+
+Add a storage bucket mount to an agent.
+
+```typescript
+const mount = await client.mounts.addMount(agentSlug, options);
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `agentSlug` | `string` | Yes | The agent's slug |
+| `options.bucketSlug` | `string` | Yes | Bucket to mount |
+| `options.mountPath` | `string` | Yes | Path inside the sandbox (e.g., `/data`) |
+| `options.sourcePrefix` | `string` | No | Bucket prefix to mount |
+| `options.permissionRules` | `PermissionRule[]` | No | Permission rules |
+| `options.cacheEnabled` | `boolean` | No | Enable caching |
+| `options.cacheTtlSeconds` | `number` | No | Cache TTL in seconds |
+
+**Returns:** `Promise<Mount>`
+
+**Example:**
+
+```typescript
+const mount = await client.mounts.addMount('my-agent', {
+  bucketSlug: 'production-data',
+  mountPath: '/data',
+  permissionRules: [{ path: '/', mode: 'ro' }],
+});
+```
+
+---
+
+### updateMount(agentSlug, mountId, options)
+
+Update an existing mount.
+
+```typescript
+const mount = await client.mounts.updateMount(agentSlug, mountId, options);
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `agentSlug` | `string` | Yes | The agent's slug |
+| `mountId` | `string` | Yes | The mount ID |
+| `options.mountPath` | `string` | No | New mount path |
+| `options.sourcePrefix` | `string` | No | New source prefix |
+| `options.permissionRules` | `PermissionRule[]` | No | New permission rules |
+| `options.cacheEnabled` | `boolean` | No | Enable/disable caching |
+| `options.cacheTtlSeconds` | `number` | No | New cache TTL |
+| `options.enabled` | `boolean` | No | Enable/disable the mount |
+
+**Returns:** `Promise<Mount>`
+
+---
+
+### removeMount(agentSlug, mountId)
+
+Remove a mount from an agent.
+
+```typescript
+await client.mounts.removeMount(agentSlug, mountId);
+```
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `agentSlug` | `string` | The agent's slug |
+| `mountId` | `string` | The mount ID |
+
+**Returns:** `Promise<void>`
+
+---
+
+## See Also
+
+- [cast mounts](/cli/mounts) — CLI equivalent
+- [Storage API](/sdk/storage) — Manage buckets
+- [Types](/sdk/types) — TypeScript interfaces

@@ -1,0 +1,61 @@
+---
+title: "cast sessions"
+description: "Manage agent sessions"
+---
+
+# cast sessions
+
+Manage sessions for deployed agents. Sessions allow multi-turn conversations that reuse the same sandbox.
+
+## Subcommands
+
+| Command | Description |
+|---------|-------------|
+| `cast sessions list <slug>` | List sessions for an agent |
+| `cast sessions delete <slug> <session-id>` | Delete a session |
+
+---
+
+## cast sessions list
+
+List all sessions for a deployed agent.
+
+### Usage
+
+```bash
+cast sessions list <slug>
+```
+
+### Arguments
+
+| Argument | Description | Required |
+|----------|-------------|----------|
+| `slug` | The agent's unique slug | Yes |
+
+### Output
+
+Displays a table with session ID, sandbox ID, creation date, and last invocation time.
+
+---
+
+## cast sessions delete
+
+Delete a specific session.
+
+### Usage
+
+```bash
+cast sessions delete <slug> <session-id>
+```
+
+### Arguments
+
+| Argument | Description | Required |
+|----------|-------------|----------|
+| `slug` | The agent's unique slug | Yes |
+| `session-id` | The session ID to delete | Yes |
+
+## See Also
+
+- [cast invoke](/cli/invoke) — Invoke an agent (use `--session` for multi-turn)
+- [Concepts: Invocations](/concepts/invocations) — How sessions work

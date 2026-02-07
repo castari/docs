@@ -1,0 +1,146 @@
+---
+title: "cast buckets"
+description: "Manage cloud storage buckets"
+---
+
+# cast buckets
+
+Manage cloud storage buckets for agent file access. Supports Amazon S3, Google Cloud Storage, and Cloudflare R2.
+
+## Subcommands
+
+| Command | Description |
+|---------|-------------|
+| `cast buckets list` | List all storage buckets |
+| `cast buckets create <name>` | Create a new bucket |
+| `cast buckets get <slug>` | Get bucket details |
+| `cast buckets delete <slug>` | Delete a bucket |
+| `cast buckets test <slug>` | Test bucket connection |
+| `cast buckets credentials <slug>` | Set bucket credentials |
+
+---
+
+## cast buckets list
+
+List all configured storage buckets.
+
+### Usage
+
+```bash
+cast buckets list
+```
+
+---
+
+## cast buckets create
+
+Create a new storage bucket configuration.
+
+### Usage
+
+```bash
+cast buckets create <name> [options]
+```
+
+### Arguments
+
+| Argument | Description | Required |
+|----------|-------------|----------|
+| `name` | Display name for the bucket | Yes |
+
+### Options
+
+| Option | Description | Required |
+|--------|-------------|----------|
+| `--slug <slug>` | URL-safe identifier | No (auto-generated) |
+| `--provider <provider>` | Storage provider: `s3`, `gcs`, or `r2` | Yes |
+| `--bucket-name <name>` | Actual bucket name in the cloud provider | Yes |
+| `--region <region>` | AWS region (for S3) | No |
+| `--endpoint <url>` | Custom endpoint URL (required for R2) | No |
+
+### Example
+
+```bash
+cast buckets create "Production Data" \
+  --provider s3 \
+  --bucket-name my-data-bucket \
+  --region us-east-1
+```
+
+---
+
+## cast buckets get
+
+Get details for a specific bucket.
+
+### Usage
+
+```bash
+cast buckets get <slug>
+```
+
+---
+
+## cast buckets delete
+
+Delete a bucket configuration.
+
+### Usage
+
+```bash
+cast buckets delete <slug> [-f, --force]
+```
+
+---
+
+## cast buckets test
+
+Test the connection to a bucket.
+
+### Usage
+
+```bash
+cast buckets test <slug>
+```
+
+Verifies that the configured credentials can access the bucket.
+
+---
+
+## cast buckets credentials
+
+Set credentials for a bucket.
+
+### Usage
+
+```bash
+cast buckets credentials <slug> [options]
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--access-key-id <id>` | AWS/R2 access key ID |
+| `--secret-access-key <key>` | AWS/R2 secret access key |
+| `--service-account-file <path>` | Path to GCS service account JSON file |
+
+### Example (S3/R2)
+
+```bash
+cast buckets credentials my-bucket \
+  --access-key-id AKIAIOSFODNN7EXAMPLE \
+  --secret-access-key wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+```
+
+### Example (GCS)
+
+```bash
+cast buckets credentials my-gcs-bucket \
+  --service-account-file ./service-account.json
+```
+
+## See Also
+
+- [cast mounts](/cli/mounts) — Mount buckets to agents
+- [Storage API (SDK)](/sdk/storage) — Manage buckets programmatically

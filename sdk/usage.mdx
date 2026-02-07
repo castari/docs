@@ -1,0 +1,102 @@
+---
+title: "Usage API"
+description: "Query usage statistics and costs"
+---
+
+# Usage API
+
+The Usage API lets you query invocation counts, token usage, and costs.
+
+Access via `client.usage`:
+
+```typescript
+const client = new CastariClient({ apiKey: '...' });
+const usage = client.usage;
+```
+
+## Methods
+
+### summary(options?)
+
+Get a usage summary for a time period.
+
+```typescript
+const summary = await client.usage.summary(options?);
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `options.days` | `number` | No | Number of days to include (default: `30`) |
+
+**Returns:** `Promise<UsageSummary>`
+
+**Example:**
+
+```typescript
+const summary = await client.usage.summary({ days: 7 });
+console.log(`Invocations: ${summary.total_invocations}`);
+console.log(`Input tokens: ${summary.total_input_tokens}`);
+console.log(`Output tokens: ${summary.total_output_tokens}`);
+console.log(`Total cost: $${summary.total_cost_usd}`);
+```
+
+**Response type:**
+
+```typescript
+interface UsageSummary {
+  total_invocations: number;
+  total_input_tokens: number;
+  total_output_tokens: number;
+  total_cost_usd: number;
+  period_start: string;
+  period_end: string;
+}
+```
+
+---
+
+### daily(options?)
+
+Get a daily usage breakdown.
+
+```typescript
+const days = await client.usage.daily(options?);
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `options.days` | `number` | No | Number of days to include (default: `30`) |
+
+**Returns:** `Promise<DailyUsage[]>`
+
+**Example:**
+
+```typescript
+const days = await client.usage.daily({ days: 7 });
+for (const day of days) {
+  console.log(`${day.date}: ${day.invocation_count} invocations, $${day.cost_usd}`);
+}
+```
+
+**Response type:**
+
+```typescript
+interface DailyUsage {
+  date: string;
+  invocation_count: number;
+  input_tokens: number;
+  output_tokens: number;
+  cost_usd: number;
+}
+```
+
+---
+
+## See Also
+
+- [cast usage](/cli/usage) — CLI equivalent
+- [Types](/sdk/types) — TypeScript interfaces

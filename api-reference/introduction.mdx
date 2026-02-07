@@ -43,9 +43,16 @@ curl https://api.castari.com/api/v1/agents \
 
 | Endpoint Type | Limit |
 |---------------|-------|
-| Read operations (GET) | 100 requests/minute |
-| Write operations (POST, PUT, DELETE) | 60 requests/minute |
+| CRUD operations (GET, POST, PUT, PATCH, DELETE) | 100 requests/minute |
 | Invocations | 10 requests/minute |
+
+Rate limit headers are included in all responses:
+
+| Header | Description |
+|--------|-------------|
+| `X-RateLimit-Limit` | Maximum requests allowed |
+| `X-RateLimit-Remaining` | Requests remaining in window |
+| `X-RateLimit-Reset` | Unix timestamp when limit resets |
 
 When rate limited, you'll receive a `429 Too Many Requests` response:
 
@@ -115,9 +122,10 @@ GET /api/v1/agents?limit=10&offset=0
 | `GET` | `/api/v1/agents` | List all agents |
 | `POST` | `/api/v1/agents` | Create an agent |
 | `GET` | `/api/v1/agents/{slug}` | Get agent details |
+| `PATCH` | `/api/v1/agents/{slug}` | Update an agent |
 | `DELETE` | `/api/v1/agents/{slug}` | Delete an agent |
 | `POST` | `/api/v1/agents/{slug}/deploy` | Deploy an agent |
-| `POST` | `/api/v1/agents/{slug}/stop` | Stop an agent |
+| `DELETE` | `/api/v1/agents/{slug}/sandbox` | Stop an agent (destroy sandbox) |
 | `POST` | `/api/v1/agents/{slug}/invoke` | Invoke an agent |
 
 ### Secrets
@@ -128,12 +136,66 @@ GET /api/v1/agents?limit=10&offset=0
 | `POST` | `/api/v1/agents/{slug}/secrets` | Set a secret |
 | `DELETE` | `/api/v1/agents/{slug}/secrets/{key}` | Delete a secret |
 
+### Sessions
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/agents/{slug}/sessions` | List sessions |
+| `DELETE` | `/api/v1/agents/{slug}/sessions/{id}` | Delete a session |
+
+### Invocations
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/agents/{slug}/invocations` | List invocation history |
+
+### API Keys
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/api-keys` | List all API keys |
+| `POST` | `/api/v1/api-keys` | Create a new API key |
+| `DELETE` | `/api/v1/api-keys/{id}` | Revoke an API key |
+
 ### Usage
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/api/v1/usage` | Get usage summary |
 | `GET` | `/api/v1/usage/daily` | Get daily breakdown |
+
+### Storage (Buckets)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/buckets` | List all buckets |
+| `POST` | `/api/v1/buckets` | Create a bucket |
+| `GET` | `/api/v1/buckets/{slug}` | Get bucket details |
+| `PATCH` | `/api/v1/buckets/{slug}` | Update a bucket |
+| `DELETE` | `/api/v1/buckets/{slug}` | Delete a bucket |
+| `POST` | `/api/v1/buckets/{slug}/credentials` | Set bucket credentials |
+| `POST` | `/api/v1/buckets/{slug}/test` | Test bucket connection |
+
+### Mounts
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/agents/{slug}/mounts` | List mounts for an agent |
+| `POST` | `/api/v1/agents/{slug}/mounts` | Add a mount |
+| `PATCH` | `/api/v1/agents/{slug}/mounts/{id}` | Update a mount |
+| `DELETE` | `/api/v1/agents/{slug}/mounts/{id}` | Remove a mount |
+
+### Files (Managed Storage v2)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/files` | List files |
+| `POST` | `/api/v1/files` | Upload a file |
+| `GET` | `/api/v1/files/{id}` | Get file metadata |
+| `PATCH` | `/api/v1/files/{id}` | Update file metadata |
+| `DELETE` | `/api/v1/files/{id}` | Delete a file |
+| `GET` | `/api/v1/files/{id}/download` | Download a file |
+| `GET` | `/api/v1/files/usage` | Get storage usage |
 
 ## SDKs
 

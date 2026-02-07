@@ -65,8 +65,12 @@ const client = new CastariClient({
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `agents` | `AgentsAPI` | Agent management methods |
-| `secrets` | `SecretsAPI` | Secret management methods |
+| `agents` | [`AgentsAPI`](/sdk/agents) | Agent management methods |
+| `auth` | [`AuthAPI`](/sdk/auth) | Authentication and API key management |
+| `usage` | [`UsageAPI`](/sdk/usage) | Usage statistics and costs |
+| `storage` | [`StorageAPI`](/sdk/storage) | Cloud storage bucket management |
+| `mounts` | [`MountsAPI`](/sdk/mounts) | Agent mount configuration |
+| `files` | [`FilesAPI`](/sdk/files) | Managed file storage (v2) |
 
 ## Example Usage
 
@@ -117,4 +121,9 @@ const client = new CastariClient({});
 
 - [Agents API](/sdk/agents) — Manage agents
 - [Secrets API](/sdk/secrets) — Manage secrets
+- [Auth API](/sdk/auth) — Authentication and API keys
+- [Usage API](/sdk/usage) — Usage statistics
+- [Storage API](/sdk/storage) — Cloud storage buckets
+- [Mounts API](/sdk/mounts) — Agent mounts
+- [Files API](/sdk/files) — Managed file storage
 - [Types](/sdk/types) — TypeScript interfaces
