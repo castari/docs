@@ -1,0 +1,370 @@
+---
+title: "cast files"
+description: "Manage files in Castari storage"
+---
+
+# cast files
+
+Manage files in Castari's managed storage. Upload, list, and manage files that can be attached to agents.
+
+## Command Overview
+
+| Command | Description |
+|---------|-------------|
+| `cast files list` | List files in storage |
+| `cast files upload` | Upload a file |
+| `cast files get` | Get file details |
+| `cast files delete` | Delete a file |
+| `cast files download` | Download a file |
+| `cast files usage` | Show storage usage |
+
+---
+
+## cast files list
+
+List files in your managed storage.
+
+### Usage
+
+```bash
+cast files list [options]
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--limit <n>` | Maximum files to return (default: 50) |
+| `--offset <n>` | Number of files to skip (default: 0) |
+| `--scope <scope>` | Filter by scope: `user`, `agent`, `session` |
+| `--tags <tags>` | Filter by tags (comma-separated) |
+| `--search <query>` | Search in filename and description |
+
+### Example
+
+```bash
+cast files list
+```
+
+### Output
+
+```
+File ID                  Filename                       Size         Scope      Created
+file_abc123              training-data.csv              2.4 MB       user       Jan 15, 2024
+file_def456              config.json                    1.2 KB       user       Jan 14, 2024
+file_ghi789              reference.txt                  45.6 KB      user       Jan 13, 2024
+
+ℹ Showing 3 of 3 files
+```
+
+### Filter by Tags
+
+```bash
+cast files list --tags dataset,csv
+```
+
+### Search Files
+
+```bash
+cast files list --search training
+```
+
+---
+
+## cast files upload
+
+Upload a file to managed storage.
+
+### Usage
+
+```bash
+cast files upload <path> [options]
+```
+
+### Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `path` | Local file path to upload |
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--description <desc>` | File description |
+| `--tags <tags>` | Comma-separated tags |
+
+### Example
+
+```bash
+cast files upload data.csv --description "Training data" --tags dataset,ml
+```
+
+### Output
+
+```
+✓ Uploaded data.csv
+
+  File ID    file_abc123
+  Size       2.4 MB
+
+  → Attach to agent: cast agents files add <agent-slug> file_abc123
+```
+
+<Tip>
+Files larger than 10MB automatically use presigned uploads for better performance.
+</Tip>
+
+---
+
+## cast files get
+
+Get detailed information about a file.
+
+### Usage
+
+```bash
+cast files get <file_id>
+```
+
+### Example
+
+```bash
+cast files get file_abc123
+```
+
+### Output
+
+```
+  File ID       file_abc123
+  Filename      data.csv
+  Size          2.4 MB
+  Content Type  text/csv
+  Scope         user
+  Status        confirmed
+  Description   Training data
+  Tags          dataset, ml
+  SHA256        a1b2c3d4e5f6...
+  Created       Jan 15, 2024 10:30 AM
+  Updated       Jan 15, 2024 10:30 AM
+```
+
+---
+
+## cast files delete
+
+Delete a file from storage.
+
+### Usage
+
+```bash
+cast files delete <file_id> [options]
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `-f, --force` | Skip confirmation prompt |
+
+### Example
+
+```bash
+cast files delete file_abc123
+```
+
+### Output
+
+```
+Are you sure you want to delete file 'file_abc123'? [y/N] y
+✓ File 'file_abc123' deleted
+```
+
+<Warning>
+Deleting a file will also detach it from any agents it was attached to.
+</Warning>
+
+---
+
+## cast files download
+
+Download a file from storage.
+
+### Usage
+
+```bash
+cast files download <file_id> [options]
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--output <path>` | Output file path (default: original filename) |
+
+### Example
+
+```bash
+cast files download file_abc123 --output ./local-data.csv
+```
+
+### Output
+
+```
+✓ Downloaded to ./local-data.csv
+ℹ Size: 2.4 MB
+```
+
+---
+
+## cast files usage
+
+Show your storage usage and quota.
+
+### Usage
+
+```bash
+cast files usage
+```
+
+### Example
+
+```bash
+cast files usage
+```
+
+### Output
+
+```
+  Total Files    12
+  Total Size     45.2 MB
+  Quota Used     45.2%
+  Quota Limit    100 MB
+
+  ████████████████████░░░░░░░░░░░░░░░░░░░░ 45.2%
+```
+
+---
+
+## Agent Files Commands
+
+Manage files attached to specific agents.
+
+### cast agents files list
+
+List files attached to an agent.
+
+```bash
+cast agents files list <slug>
+```
+
+#### Example
+
+```bash
+cast agents files list my-agent
+```
+
+#### Output
+
+```
+File ID                  Filename                 Mount Path                    Size         Mode
+file_abc123              data.csv                 /files/agent/data.csv         2.4 MB       ro
+file_def456              config.json              /files/agent/config.json      1.2 KB       ro
+
+ℹ 2 files attached (2.4 MB total)
+```
+
+---
+
+### cast agents files add
+
+Attach a file to an agent.
+
+```bash
+cast agents files add <slug> <file_id> [options]
+```
+
+#### Options
+
+| Option | Description |
+|--------|-------------|
+| `--mount-path <path>` | Custom mount path (default: `/files/agent/<filename>`) |
+| `--writable` | Make file writable (default: read-only) |
+
+#### Example
+
+```bash
+cast agents files add my-agent file_abc123
+```
+
+#### Output
+
+```
+✓ File attached to agent 'my-agent'
+
+  File ID      file_abc123
+  Filename     data.csv
+  Mount Path   /files/agent/data.csv
+  Mode         read-only
+
+  → File will be available at /files/agent/data.csv in the sandbox
+```
+
+---
+
+### cast agents files remove
+
+Detach a file from an agent.
+
+```bash
+cast agents files remove <slug> <file_id> [options]
+```
+
+#### Options
+
+| Option | Description |
+|--------|-------------|
+| `-f, --force` | Skip confirmation prompt |
+
+#### Example
+
+```bash
+cast agents files remove my-agent file_abc123
+```
+
+#### Output
+
+```
+Detach file 'file_abc123' from agent 'my-agent'? [y/N] y
+✓ File 'file_abc123' detached from agent 'my-agent'
+```
+
+---
+
+## Workflow Example
+
+Complete workflow for using files with an agent:
+
+```bash
+# 1. Upload a file
+cast files upload training-data.csv --description "ML training data"
+# → file_abc123
+
+# 2. Attach to agent
+cast agents files add my-ml-agent file_abc123
+
+# 3. Verify attachment
+cast agents files list my-ml-agent
+
+# 4. Deploy and run agent
+cast deploy my-ml-agent
+cast invoke my-ml-agent "Process the training data"
+
+# 5. Clean up when done
+cast agents files remove my-ml-agent file_abc123
+```
+
+## See Also
+
+- [Managed Files Concept](/concepts/files) — How managed files work
+- [Storage Buckets](/guides/storage) — BYO storage for large datasets
