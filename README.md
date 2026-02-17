@@ -60,6 +60,7 @@ cast invoke my-agent "What files are in the current directory?"
 ### Guides
 - [Templates](https://docs.castari.com/guides/templates)
 - [Custom Agents](https://docs.castari.com/guides/custom-agents)
+- [Claude Code Plugin](https://docs.castari.com/guides/claude-code)
 - [MCP Integration](https://docs.castari.com/guides/mcp)
 - [Debugging](https://docs.castari.com/guides/debugging)
 - [Best Practices](https://docs.castari.com/guides/best-practices)

@@ -95,6 +95,7 @@
             "pages": [
               "guides/templates",
               "guides/custom-agents",
+              "guides/claude-code",
               "guides/mcp",
               "guides/debugging",
               "guides/best-practices",

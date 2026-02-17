@@ -1,0 +1,88 @@
+---
+title: "Claude Code Plugin"
+description: "Deploy agents to Castari directly from Claude Code"
+---
+
+# Claude Code Plugin
+
+The Castari plugin for [Claude Code](https://claude.ai/code) lets you deploy agents without leaving your editor. Type `/castari-deploy` and the skill handles CLI installation, authentication, project scaffolding, and deployment — all in one flow.
+
+<Info>
+**View on skills.sh:** [skills.sh/castari/cli](https://skills.sh/castari/cli)
+</Info>
+
+## Install the Plugin
+
+```bash
+npx skills add castari/cli
+```
+
+This installs the Castari plugin into your Claude Code environment. Once installed, the `/castari-deploy` skill is available in any project.
+
+## Using `/castari-deploy`
+
+Type `/castari-deploy` in Claude Code (or ask Claude to "deploy to Castari") and the skill walks through the full deployment flow:
+
+### Step 1: CLI Check
+
+The skill checks if the Castari CLI is installed by running `cast --version`. If not found, it installs the CLI globally via npm.
+
+### Step 2: Authentication
+
+Runs `cast whoami` to check if you're logged in. If not, it triggers `cast login` which opens your browser for Clerk OAuth authentication.
+
+### Step 3: Project Configuration
+
+Looks for `castari.json` in your project root. If one exists, the skill confirms its configuration with you. If not, it:
+
+- Detects your entrypoint file (e.g., `src/index.ts`, `index.js`)
+- Asks you for an agent name
+- Generates a `castari.json` manifest
+
+### Step 4: Deploy
+
+Runs `cast deploy` to package your project and deploy it to an isolated cloud sandbox.
+
+### Step 5: Verification
+
+Shows you a summary of the deployment — agent name, status, and sandbox ID.
+
+### Step 6: Testing
+
+Offers to test the deployed agent by running `cast invoke` with a prompt you provide.
+
+## Trigger Phrases
+
+The skill activates when you ask Claude to:
+
+- "deploy to Castari"
+- "deploy my agent"
+- "castari deploy"
+- "push agent to Castari"
+- "ship my agent"
+- "set up Castari"
+
+Or any variation of deploying an agent to Castari.
+
+## Requirements
+
+- [Node.js](https://nodejs.org) 18 or higher
+- A [Castari account](https://app.castari.com) (free to sign up)
+- [Claude Code](https://claude.ai/code) installed
+
+## See Also
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Manual deployment walkthrough
+  </Card>
+  <Card title="CLI Reference" icon="terminal" href="/cli/overview">
+    Full CLI command reference
+  </Card>
+  <Card title="Custom Agents" icon="pen" href="/guides/custom-agents">
+    Building agents from scratch
+  </Card>
+  <Card title="Templates" icon="grid" href="/guides/templates">
+    Start from a template
+  </Card>
+</CardGroup>
