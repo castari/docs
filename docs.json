@@ -17,6 +17,10 @@
       "url": "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
     }
   },
+  "banner": {
+    "content": "**New:** Deploy agents directly from Claude Code with `/castari-deploy`. [Learn more](/guides/claude-code)",
+    "dismissible": true
+  },
   "favicon": "/favicon.svg",
   "logo": {
     "light": "/logo/light.svg",
@@ -24,6 +28,10 @@
   },
   "navbar": {
     "links": [
+      {
+        "label": "Claude Code Plugin",
+        "href": "/guides/claude-code"
+      },
       {
         "label": "Dashboard",
         "href": "https://app.castari.com"
@@ -95,6 +103,7 @@
             "pages": [
               "guides/templates",
               "guides/custom-agents",
+              "guides/claude-code",
               "guides/mcp",
               "guides/debugging",
               "guides/best-practices",
