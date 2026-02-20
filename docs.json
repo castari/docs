@@ -139,6 +139,12 @@
       "linkedin": "https://linkedin.com/company/castari"
     }
   },
+  "analytics": {
+    "posthog": {
+      "apiKey": "phc_dTz46lezSNWVFetq8Z2EMWOnC5MMK6FTedUihHxrQ5s",
+      "apiHost": "https://us.i.posthog.com"
+    }
+  },
   "feedback": {
     "thumbsRating": true,
     "suggestEdit": true
